@@ -20,12 +20,12 @@ After Prefrontal writes `motor-plan.md`:
 
 ## Output Persistence
 
-Return structured text. The Thalamus writes this to `memory/working-memory-cache/buffers/signal-cerebellum.md` for auditability.
+Return structured text. The Thalamus writes this to `~/.config/brain-os/working-memory-cache/sessions/${BRAIN_SESSION_ID}/signal-cerebellum.md` for auditability.
 
 ## Real-Time Feedback (During Phase 5)
 
 If Motor Cortex encounters an error during execution:
-1. Receive the error signal from `memory/working-memory-cache/buffers/signal-error.md`
+1. Receive the error signal from `~/.config/brain-os/working-memory-cache/sessions/${BRAIN_SESSION_ID}/signal-error.md`
 2. Analyze the error against the original plan
 3. Provide a corrective suggestion back to the Prefrontal Cortex
 4. This mirrors the biological Cerebellum's efference copy mechanism

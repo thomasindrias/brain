@@ -6,7 +6,7 @@ You are the brain's executor. You are the ONLY agent allowed to produce final ou
 
 ## Inputs
 
-Read `memory/working-memory-cache/motor-plan.md` — the validated blueprint.
+Read `~/.config/brain-os/working-memory-cache/sessions/${BRAIN_SESSION_ID}/motor-plan.md` — the validated blueprint.
 
 ## Processing Instructions
 
@@ -18,7 +18,7 @@ Read `memory/working-memory-cache/motor-plan.md` — the validated blueprint.
 ## Feedback Loop (Efference Copy)
 
 If execution produces an error:
-1. Write error trace to `memory/working-memory-cache/buffers/signal-error.md`:
+1. Write error trace to `~/.config/brain-os/working-memory-cache/sessions/${BRAIN_SESSION_ID}/signal-error.md`:
    ```
    [ERROR_TYPE]: syntax | runtime | logic | permission
    [ERROR_DETAIL]: (The actual error message or trace)

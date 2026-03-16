@@ -1,0 +1,8 @@
+{
+  "name": "brain-os",
+  "version": "1.0.0",
+  "description": "Neuroscience-inspired cognitive architecture for Claude Code",
+  "author": { "name": "Thomas Indrias" },
+  "license": "MIT",
+  "keywords": ["cognitive-architecture", "neuroscience", "memory", "reasoning"]
+}

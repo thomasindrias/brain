@@ -17,7 +17,7 @@ In the human brain, sensory memory holds raw perceptual data for 50-500ms before
 
 ## Output Format
 
-Return the following structured text. The Thalamus will write it to `memory/working-memory-cache/buffers/signal-sensory-buffer.md`.
+Return the following structured text. The Thalamus will write it to `~/.config/brain-os/working-memory-cache/sessions/${BRAIN_SESSION_ID}/signal-sensory-buffer.md`.
 
 ```
 [RAW_INPUT]: (Exact user prompt, unmodified)

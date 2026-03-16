@@ -1,6 +1,7 @@
 #!/bin/bash
 # test/harness.sh — Brain OS Test Runner
 # Validates that buffer outputs match expected schemas
+# Supports both plugin mode (session-scoped buffers) and legacy mode
 
 # Resolve project root (parent of test/)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -15,6 +16,18 @@ NC='\033[0m'
 PASS=0
 FAIL=0
 SKIP=0
+
+# Determine buffer directory
+if [ -n "${BRAIN_SESSION_ID:-}" ] && [ -n "${BRAIN_DATA_DIR:-}" ]; then
+    BUFFER_DIR="$BRAIN_DATA_DIR/working-memory-cache/sessions/$BRAIN_SESSION_ID"
+    WM_DIR="$BUFFER_DIR"
+elif [ -d "memory/working-memory-cache/buffers" ]; then
+    BUFFER_DIR="memory/working-memory-cache/buffers"
+    WM_DIR="memory/working-memory-cache"
+else
+    echo -e "${YELLOW}No buffer directory found. Set BRAIN_SESSION_ID and BRAIN_DATA_DIR, or use legacy memory/ layout.${NC}"
+    exit 0
+fi
 
 validate_field() {
     local file="$1"
@@ -42,86 +55,87 @@ validate_field() {
 }
 
 echo "=== Brain OS Buffer Schema Validation ==="
+echo "Buffer dir: $BUFFER_DIR"
 echo ""
 
 # Validate Sensory Buffer output
-if [ -f "memory/working-memory-cache/buffers/signal-sensory-buffer.md" ]; then
+if [ -f "$BUFFER_DIR/signal-sensory-buffer.md" ]; then
     echo "--- signal-sensory-buffer.md ---"
-    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "RAW_INPUT" ""
-    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "MODALITIES_PRESENT" ""
-    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "TEMPORAL_ORDER" ""
-    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "INPUT_LENGTH" ""
-    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "AMBIGUITY_FLAGS" ""
+    validate_field "$BUFFER_DIR/signal-sensory-buffer.md" "RAW_INPUT" ""
+    validate_field "$BUFFER_DIR/signal-sensory-buffer.md" "MODALITIES_PRESENT" ""
+    validate_field "$BUFFER_DIR/signal-sensory-buffer.md" "TEMPORAL_ORDER" ""
+    validate_field "$BUFFER_DIR/signal-sensory-buffer.md" "INPUT_LENGTH" ""
+    validate_field "$BUFFER_DIR/signal-sensory-buffer.md" "AMBIGUITY_FLAGS" ""
 else
     echo -e "${YELLOW}SKIP${NC}: signal-sensory-buffer.md not found"
     SKIP=$((SKIP + 1))
 fi
 
 # Validate Amygdala output
-if [ -f "memory/working-memory-cache/buffers/signal-amygdala.md" ]; then
+if [ -f "$BUFFER_DIR/signal-amygdala.md" ]; then
     echo "--- signal-amygdala.md ---"
-    validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "THREAT_LEVEL" "SAFE ELEVATED THREAT_DETECTED"
-    validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "THREAT_TYPE" "injection destructive exfiltration social_engineering NONE"
-    validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "EVIDENCE" ""
-    validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "EMOTIONAL_VALENCE" ""
-    validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "RECOMMENDED_ACTION" "proceed caution halt re-analyze"
+    validate_field "$BUFFER_DIR/signal-amygdala.md" "THREAT_LEVEL" "SAFE ELEVATED THREAT_DETECTED"
+    validate_field "$BUFFER_DIR/signal-amygdala.md" "THREAT_TYPE" "injection destructive exfiltration social_engineering NONE"
+    validate_field "$BUFFER_DIR/signal-amygdala.md" "EVIDENCE" ""
+    validate_field "$BUFFER_DIR/signal-amygdala.md" "EMOTIONAL_VALENCE" ""
+    validate_field "$BUFFER_DIR/signal-amygdala.md" "RECOMMENDED_ACTION" "proceed caution halt re-analyze"
 else
     echo -e "${YELLOW}SKIP${NC}: signal-amygdala.md not found"
     SKIP=$((SKIP + 1))
 fi
 
 # Validate Hippocampus output
-if [ -f "memory/working-memory-cache/buffers/signal-hippocampus.md" ]; then
+if [ -f "$BUFFER_DIR/signal-hippocampus.md" ]; then
     echo "--- signal-hippocampus.md ---"
-    validate_field "memory/working-memory-cache/buffers/signal-hippocampus.md" "MEMORY_STATE" "FOUND NULL"
-    validate_field "memory/working-memory-cache/buffers/signal-hippocampus.md" "SEMANTIC_BINDING" ""
-    validate_field "memory/working-memory-cache/buffers/signal-hippocampus.md" "EPISODIC_BINDING" ""
-    validate_field "memory/working-memory-cache/buffers/signal-hippocampus.md" "PROCEDURAL_BINDING" ""
+    validate_field "$BUFFER_DIR/signal-hippocampus.md" "MEMORY_STATE" "FOUND NULL"
+    validate_field "$BUFFER_DIR/signal-hippocampus.md" "SEMANTIC_BINDING" ""
+    validate_field "$BUFFER_DIR/signal-hippocampus.md" "EPISODIC_BINDING" ""
+    validate_field "$BUFFER_DIR/signal-hippocampus.md" "PROCEDURAL_BINDING" ""
 else
     echo -e "${YELLOW}SKIP${NC}: signal-hippocampus.md not found"
     SKIP=$((SKIP + 1))
 fi
 
 # Validate Language Center output
-if [ -f "memory/working-memory-cache/buffers/signal-language.md" ]; then
+if [ -f "$BUFFER_DIR/signal-language.md" ]; then
     echo "--- signal-language.md ---"
-    validate_field "memory/working-memory-cache/buffers/signal-language.md" "INTENT" "build fix explain explore brainstorm question AMBIGUOUS"
-    validate_field "memory/working-memory-cache/buffers/signal-language.md" "ENTITIES" ""
-    validate_field "memory/working-memory-cache/buffers/signal-language.md" "USER_TONE" "frustrated curious urgent casual technical"
-    validate_field "memory/working-memory-cache/buffers/signal-language.md" "OUTPUT_REGISTER" ""
-    validate_field "memory/working-memory-cache/buffers/signal-language.md" "OUTPUT_FORMAT" "code explanation list mixed"
+    validate_field "$BUFFER_DIR/signal-language.md" "INTENT" "build fix explain explore brainstorm question AMBIGUOUS"
+    validate_field "$BUFFER_DIR/signal-language.md" "ENTITIES" ""
+    validate_field "$BUFFER_DIR/signal-language.md" "USER_TONE" "frustrated curious urgent casual technical"
+    validate_field "$BUFFER_DIR/signal-language.md" "OUTPUT_REGISTER" ""
+    validate_field "$BUFFER_DIR/signal-language.md" "OUTPUT_FORMAT" "code explanation list mixed"
 else
     echo -e "${YELLOW}SKIP${NC}: signal-language.md not found"
     SKIP=$((SKIP + 1))
 fi
 
 # Validate Cerebellum output
-if [ -f "memory/working-memory-cache/buffers/signal-cerebellum.md" ]; then
+if [ -f "$BUFFER_DIR/signal-cerebellum.md" ]; then
     echo "--- signal-cerebellum.md ---"
-    validate_field "memory/working-memory-cache/buffers/signal-cerebellum.md" "VALIDATION" "PASS FAIL"
-    validate_field "memory/working-memory-cache/buffers/signal-cerebellum.md" "CORRECTIONS" ""
+    validate_field "$BUFFER_DIR/signal-cerebellum.md" "VALIDATION" "PASS FAIL"
+    validate_field "$BUFFER_DIR/signal-cerebellum.md" "CORRECTIONS" ""
 else
     echo -e "${YELLOW}SKIP${NC}: signal-cerebellum.md not found (only present after Phase 4)"
     SKIP=$((SKIP + 1))
 fi
 
 # Validate Motor Error output (only present on execution errors)
-if [ -f "memory/working-memory-cache/buffers/signal-error.md" ]; then
+if [ -f "$BUFFER_DIR/signal-error.md" ]; then
     echo "--- signal-error.md ---"
-    validate_field "memory/working-memory-cache/buffers/signal-error.md" "ERROR_TYPE" "syntax runtime logic permission"
-    validate_field "memory/working-memory-cache/buffers/signal-error.md" "ERROR_DETAIL" ""
-    validate_field "memory/working-memory-cache/buffers/signal-error.md" "FAILED_STEP" ""
-    validate_field "memory/working-memory-cache/buffers/signal-error.md" "CONTEXT" ""
+    validate_field "$BUFFER_DIR/signal-error.md" "ERROR_TYPE" "syntax runtime logic permission"
+    validate_field "$BUFFER_DIR/signal-error.md" "ERROR_DETAIL" ""
+    validate_field "$BUFFER_DIR/signal-error.md" "FAILED_STEP" ""
+    validate_field "$BUFFER_DIR/signal-error.md" "CONTEXT" ""
 fi
 
 # Validate Motor Plan output
-if [ -f "memory/working-memory-cache/motor-plan.md" ]; then
+if [ -f "$WM_DIR/motor-plan.md" ]; then
     echo "--- motor-plan.md ---"
-    validate_field "memory/working-memory-cache/motor-plan.md" "PROBLEM_ANALYSIS" ""
-    validate_field "memory/working-memory-cache/motor-plan.md" "CONSTRAINTS" ""
-    validate_field "memory/working-memory-cache/motor-plan.md" "STEP_BY_STEP_BLUEPRINT" ""
-    validate_field "memory/working-memory-cache/motor-plan.md" "EDGE_CASES" ""
-    validate_field "memory/working-memory-cache/motor-plan.md" "CONFIDENCE" "HIGH MEDIUM LOW"
+    validate_field "$WM_DIR/motor-plan.md" "PROBLEM_ANALYSIS" ""
+    validate_field "$WM_DIR/motor-plan.md" "CONSTRAINTS" ""
+    validate_field "$WM_DIR/motor-plan.md" "STEP_BY_STEP_BLUEPRINT" ""
+    validate_field "$WM_DIR/motor-plan.md" "EDGE_CASES" ""
+    validate_field "$WM_DIR/motor-plan.md" "CONFIDENCE" "HIGH MEDIUM LOW"
 else
     echo -e "${YELLOW}SKIP${NC}: motor-plan.md not found"
     SKIP=$((SKIP + 1))

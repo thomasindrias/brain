@@ -19,7 +19,7 @@ Define output constraints for the Motor Cortex:
 
 ## Output Format
 
-Return structured text. The Thalamus writes this to `memory/working-memory-cache/buffers/signal-language.md`.
+Return structured text. The Thalamus writes this to `~/.config/brain-os/working-memory-cache/sessions/${BRAIN_SESSION_ID}/signal-language.md`.
 
 ```
 [INTENT]: (build | fix | explain | explore | brainstorm | question | AMBIGUOUS)

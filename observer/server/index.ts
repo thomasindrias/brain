@@ -175,11 +175,14 @@ export async function createServer(options: ServerOptions) {
   };
 
   // Create file watcher
-  const neuroFilePath = path.join(brainRoot, 'skills', '1-chemical-and-health', 'state-neuromodulators.md');
+  const neuroFilePath = process.env.BRAIN_DATA_DIR
+    ? path.join(process.env.BRAIN_DATA_DIR, 'state-neuromodulators.md')
+    : path.join(brainRoot, 'regions', '1-chemical-and-health', 'state-neuromodulators.md');
+  const isSessionScoped = !!process.env.BRAIN_DATA_DIR;
   const watcher = createWatcher(
-    path.dirname(watchDir), // Parent directory (contains buffers/)
+    isSessionScoped ? watchDir : path.dirname(watchDir), // Session dir directly or parent (contains buffers/)
     handleWatcherEvent,
-    { neuroFilePath }
+    { neuroFilePath, flat: isSessionScoped }
   );
 
   // Start HTTP server
@@ -245,7 +248,9 @@ async function loadInitialState(
     }
 
     // Load neuromodulator state
-    const neuroFilePath = path.join(brainRoot, 'skills', '1-chemical-and-health', 'state-neuromodulators.md');
+    const neuroFilePath = process.env.BRAIN_DATA_DIR
+      ? path.join(process.env.BRAIN_DATA_DIR, 'state-neuromodulators.md')
+      : path.join(brainRoot, 'regions', '1-chemical-and-health', 'state-neuromodulators.md');
     try {
       const neuroContent = await fs.readFile(neuroFilePath, 'utf-8');
       state.currentNeuro = parseNeuroTable(neuroContent);
@@ -260,12 +265,50 @@ async function loadInitialState(
 /**
  * Start server if run directly
  */
+/**
+ * Find the most recent session directory
+ */
+async function findLatestSessionDir(sessionsDir: string): Promise<string | null> {
+  try {
+    const entries = await fs.readdir(sessionsDir, { withFileTypes: true });
+    const dirs = entries.filter(e => e.isDirectory()).map(e => e.name);
+    if (dirs.length === 0) return null;
+    // Sort by timestamp prefix (descending) — session IDs start with unix timestamp
+    dirs.sort((a, b) => b.localeCompare(a));
+    return path.join(sessionsDir, dirs[0]);
+  } catch {
+    return null;
+  }
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const port = parseInt(process.env.PORT || '4100', 10);
   const brainRoot = process.env.BRAIN_ROOT || path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../');
-  const watchDir = path.join(brainRoot, 'memory', 'working-memory-cache', 'buffers');
 
-  createServer({ port, watchDir, brainRoot }).catch((error) => {
+  (async () => {
+    let watchDir: string;
+
+    if (process.env.BRAIN_DATA_DIR) {
+      const sessionsDir = path.join(process.env.BRAIN_DATA_DIR, 'working-memory-cache', 'sessions');
+      // Use BRAIN_SESSION_ID if set, otherwise find the most recent session
+      if (process.env.BRAIN_SESSION_ID) {
+        watchDir = path.join(sessionsDir, process.env.BRAIN_SESSION_ID);
+      } else {
+        const latest = await findLatestSessionDir(sessionsDir);
+        if (latest) {
+          watchDir = latest;
+        } else {
+          // No sessions yet — create a temp dir and watch it
+          watchDir = path.join(sessionsDir, 'observer-standby');
+          await fs.mkdir(watchDir, { recursive: true });
+        }
+      }
+    } else {
+      watchDir = path.join(brainRoot, 'memory', 'working-memory-cache', 'buffers');
+    }
+
+    await createServer({ port, watchDir, brainRoot });
+  })().catch((error) => {
     console.error('Failed to start server:', error);
     process.exit(1);
   });

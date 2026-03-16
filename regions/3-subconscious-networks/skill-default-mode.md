@@ -14,13 +14,13 @@ You are the brain's idle-state processor. You perform background maintenance and
 ## Functions
 
 ### 1. Memory Consolidation
-- Scan `/memory/long-term/episodic/` for patterns across sessions
-- Extract recurring themes -> write to `/memory/long-term/semantic/`
+- Scan `~/.config/brain-os/long-term/episodic/` for patterns across sessions
+- Extract recurring themes -> write to `~/.config/brain-os/long-term/semantic/`
 - Promote frequent procedures to Basal Ganglia routines
 
 ### 2. Creative Association
-- Cross-reference entries across `/memory/long-term/semantic/`
-- Write novel observations to `/memory/long-term/semantic/insights.md`
+- Cross-reference entries across `~/.config/brain-os/long-term/semantic/`
+- Write novel observations to `~/.config/brain-os/long-term/semantic/insights.md`
 
 ### 3. Memory Pruning
 - Archive episodic entries >90 days old (compress into summaries)

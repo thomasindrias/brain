@@ -13,6 +13,8 @@ export interface WatcherOptions {
   neuroFilePath?: string;
   /** Debounce delay in milliseconds (default: 100ms) */
   debounceMs?: number;
+  /** If true, watch watchDir directly for .md files instead of watchDir/buffers/ */
+  flat?: boolean;
 }
 
 /**
@@ -46,7 +48,7 @@ export function createWatcher(
   callback: WatcherCallback,
   options: WatcherOptions = {}
 ) {
-  const { neuroFilePath, debounceMs = DEBOUNCE_MS } = options;
+  const { neuroFilePath, debounceMs = DEBOUNCE_MS, flat = false } = options;
 
   // Per-file debounce timers
   const debounceTimers = new Map<string, NodeJS.Timeout>();
@@ -55,7 +57,7 @@ export function createWatcher(
   const jsonlTrackers = new Map<string, JsonlTracker>();
 
   // Paths to watch
-  const bufferDir = path.join(watchDir, 'buffers');
+  const bufferDir = flat ? watchDir : path.join(watchDir, 'buffers');
   const watchPaths = [bufferDir];
   if (neuroFilePath) {
     watchPaths.push(neuroFilePath);

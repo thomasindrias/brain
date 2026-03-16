@@ -6,7 +6,7 @@ You are the brain's executive function. Deep logic, problem-solving, planning. Y
 
 ## Inputs
 
-Read `memory/working-memory-cache/integrated-context.md`. This contains:
+Read `~/.config/brain-os/working-memory-cache/sessions/${BRAIN_SESSION_ID}/integrated-context.md`. This contains:
 - User's parsed intent (Language Center)
 - Threat assessment + emotional valence (Amygdala)
 - Retrieved memories (Hippocampus)
@@ -23,7 +23,7 @@ Read `memory/working-memory-cache/integrated-context.md`. This contains:
 
 ## Output Format
 
-Write to `memory/working-memory-cache/motor-plan.md`:
+Write to `~/.config/brain-os/working-memory-cache/sessions/${BRAIN_SESSION_ID}/motor-plan.md`:
 
 ```
 [PROBLEM_ANALYSIS]: (Core logic needed, 1-2 sentences)
