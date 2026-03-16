@@ -38,9 +38,9 @@ describe('path resolution', () => {
     const brainDataDir = process.env.BRAIN_DATA_DIR;
     const neuroPath = brainDataDir
       ? path.join(brainDataDir, 'state-neuromodulators.md')
-      : path.join(brainRoot, 'skills', '1-chemical-and-health', 'state-neuromodulators.md');
+      : path.join(brainRoot, 'regions', '1-chemical-and-health', 'state-neuromodulators.md');
 
-    expect(neuroPath).toBe('/home/user/brain/skills/1-chemical-and-health/state-neuromodulators.md');
+    expect(neuroPath).toBe('/home/user/brain/regions/1-chemical-and-health/state-neuromodulators.md');
   });
 
   it('falls back to brainRoot for watch dir when BRAIN_DATA_DIR unset', () => {
@@ -50,9 +50,9 @@ describe('path resolution', () => {
     const brainDataDir = process.env.BRAIN_DATA_DIR;
     const watchDir = brainDataDir
       ? path.join(brainDataDir, 'working-memory-cache', 'sessions')
-      : path.join(brainRoot, 'memory', 'working-memory-cache', 'buffers');
+      : path.join(brainRoot, 'memory', 'working-memory-cache');
 
-    expect(watchDir).toBe('/home/user/brain/memory/working-memory-cache/buffers');
+    expect(watchDir).toBe('/home/user/brain/memory/working-memory-cache');
   });
 
   it('uses home dir default when both env vars missing', () => {
