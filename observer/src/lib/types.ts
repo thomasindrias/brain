@@ -1,0 +1,64 @@
+// Neuromodulator levels
+export type NeuroLevels = {
+  noradrenaline: string;
+  acetylcholine: string;
+  serotonin: string;
+  dopamine: string;
+};
+
+// Node status states
+export type NodeStatus = 'pending' | 'active' | 'complete' | 'error' | 'skipped';
+
+// Brain node data structure
+export type BrainNodeData = {
+  phase: string;
+  label: string;
+  agent: string;
+  status: NodeStatus;
+  fields: Record<string, string>;
+  timing?: {
+    start?: number;
+    end?: number;
+  };
+  conditional?: boolean;
+};
+
+// WebSocket message types
+export type PhaseEvent = {
+  type: 'phase';
+  phase: string;
+  agent: string;
+  status: NodeStatus;
+  timestamp: number;
+};
+
+export type BufferUpdate = {
+  type: 'buffer';
+  agent: string;
+  filename: string;
+  fields: Record<string, string>;
+  timestamp: number;
+};
+
+export type NeuroUpdate = {
+  type: 'neuro';
+  levels: NeuroLevels;
+  timestamp: number;
+};
+
+export type Snapshot = {
+  type: 'snapshot';
+  data: SessionSnapshot;
+};
+
+export type WSMessage = PhaseEvent | BufferUpdate | NeuroUpdate | Snapshot;
+
+// Session snapshot structure
+export type SessionSnapshot = {
+  id: string;
+  buffers: Record<string, Record<string, string>>;
+  events: PhaseEvent[];
+  neuro: NeuroLevels;
+  startTs: number;
+  endTs?: number;
+};
