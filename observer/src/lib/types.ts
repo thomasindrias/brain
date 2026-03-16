@@ -68,3 +68,31 @@ export type SessionSnapshot = {
   startTs: number;
   endTs?: number;
 };
+
+// UI actions
+export type UIAction =
+  | { type: 'SELECT_NODE'; agent: string | null }
+  | { type: 'VIEW_SESSION'; sessionId: string | null };
+
+// Background agent status tracking
+export type BackgroundAgentStatus = {
+  hypothalamus: string;
+  'reward-system': string;
+  'default-mode': string;
+};
+
+// Complete brain state (used by reducer)
+export type BrainState = {
+  nodes: Record<string, BrainNodeData>;
+  currentPhase: string | null;
+  neuro: NeuroLevels;
+  selectedNode: string | null;
+  viewingSession: string | null;
+  sessionHistory: SessionSnapshot[];
+  feedbackLoopActive: boolean;
+  rePlanCount: number;
+  isLive: boolean;
+  loopStartTs: number | null;
+  lastEventTs: number | null;
+  backgroundAgents: BackgroundAgentStatus;
+};
