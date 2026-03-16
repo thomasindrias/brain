@@ -26,6 +26,19 @@ The sub-agent returns structured text. **You (the Thalamus) parse the response a
 | 5 (Motor Cortex) | SUB-AGENT | Execution with feedback loop |
 | 6 (Consolidation) | SUB-AGENT | Memory consolidation |
 
+### Event Logging (for Observer)
+
+When processing a signal, append phase transition events to
+`memory/working-memory-cache/buffers/event-log.jsonl` for the observer dashboard:
+
+- Before dispatching an agent: `{"phase":"N","agent":"name","status":"start","ts":<unix_ms>}`
+- After receiving agent response: `{"phase":"N","agent":"name","status":"complete","ts":<unix_ms>}`
+- On Cerebellum result: include `"result":"PASS"` or `"result":"FAIL"` in the complete event
+- If a conditional agent is not triggered: `{"phase":"1.5","agent":"name","status":"skipped","ts":<unix_ms>}`
+- Phase 6 clears the event log along with buffer files
+
+This is optional — the brain functions without it. The observer uses it for timing and phase visualization.
+
 ## Error Handling & Resilience
 
 - **Agent timeout:** If a Phase 1 agent does not respond within a reasonable time, proceed with whatever buffers have been populated. Mark missing signals as `[STATUS]: TIMEOUT` in the integrated context.
