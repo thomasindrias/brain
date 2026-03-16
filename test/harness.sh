@@ -2,7 +2,10 @@
 # test/harness.sh — Brain OS Test Runner
 # Validates that buffer outputs match expected schemas
 
-set -e
+# Resolve project root (parent of test/)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -19,7 +22,7 @@ validate_field() {
     if ! grep -q "^\[${field}\]:" "$file" 2>/dev/null; then
         echo -e "${RED}FAIL${NC}: Missing [${field}] in $(basename $file)"
         FAIL=$((FAIL + 1))
-        return 1
+        return 0
     fi
 
     if [ -n "$allowed_values" ]; then
@@ -27,7 +30,7 @@ validate_field() {
         if ! echo "$allowed_values" | grep -qw "$value"; then
             echo -e "${RED}FAIL${NC}: [${field}] has invalid value '${value}' in $(basename $file). Allowed: ${allowed_values}"
             FAIL=$((FAIL + 1))
-            return 1
+            return 0
         fi
     fi
 
@@ -39,11 +42,22 @@ validate_field() {
 echo "=== Brain OS Buffer Schema Validation ==="
 echo ""
 
+# Validate Sensory Buffer output
+if [ -f "memory/working-memory-cache/buffers/signal-sensory-buffer.md" ]; then
+    echo "--- signal-sensory-buffer.md ---"
+    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "RAW_INPUT" ""
+    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "MODALITIES_PRESENT" ""
+    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "TEMPORAL_ORDER" ""
+    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "INPUT_LENGTH" ""
+    validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "AMBIGUITY_FLAGS" ""
+fi
+
 # Validate Amygdala output
 if [ -f "memory/working-memory-cache/buffers/signal-amygdala.md" ]; then
     echo "--- signal-amygdala.md ---"
     validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "THREAT_LEVEL" "SAFE ELEVATED THREAT_DETECTED"
     validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "THREAT_TYPE" "injection destructive exfiltration social_engineering NONE"
+    validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "EVIDENCE" ""
     validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "EMOTIONAL_VALENCE" ""
     validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "RECOMMENDED_ACTION" "proceed caution halt re-analyze"
 fi
@@ -61,8 +75,26 @@ fi
 if [ -f "memory/working-memory-cache/buffers/signal-language.md" ]; then
     echo "--- signal-language.md ---"
     validate_field "memory/working-memory-cache/buffers/signal-language.md" "INTENT" "build fix explain explore brainstorm question AMBIGUOUS"
+    validate_field "memory/working-memory-cache/buffers/signal-language.md" "ENTITIES" ""
     validate_field "memory/working-memory-cache/buffers/signal-language.md" "USER_TONE" "frustrated curious urgent casual technical"
+    validate_field "memory/working-memory-cache/buffers/signal-language.md" "OUTPUT_REGISTER" ""
     validate_field "memory/working-memory-cache/buffers/signal-language.md" "OUTPUT_FORMAT" "code explanation list mixed"
+fi
+
+# Validate Cerebellum output
+if [ -f "memory/working-memory-cache/buffers/signal-cerebellum.md" ]; then
+    echo "--- signal-cerebellum.md ---"
+    validate_field "memory/working-memory-cache/buffers/signal-cerebellum.md" "VALIDATION" "PASS FAIL"
+    validate_field "memory/working-memory-cache/buffers/signal-cerebellum.md" "CORRECTIONS" ""
+fi
+
+# Validate Motor Error output
+if [ -f "memory/working-memory-cache/buffers/signal-error.md" ]; then
+    echo "--- signal-error.md ---"
+    validate_field "memory/working-memory-cache/buffers/signal-error.md" "ERROR_TYPE" "syntax runtime logic permission"
+    validate_field "memory/working-memory-cache/buffers/signal-error.md" "ERROR_DETAIL" ""
+    validate_field "memory/working-memory-cache/buffers/signal-error.md" "FAILED_STEP" ""
+    validate_field "memory/working-memory-cache/buffers/signal-error.md" "CONTEXT" ""
 fi
 
 # Validate Motor Plan output
@@ -71,6 +103,7 @@ if [ -f "memory/working-memory-cache/motor-plan.md" ]; then
     validate_field "memory/working-memory-cache/motor-plan.md" "PROBLEM_ANALYSIS" ""
     validate_field "memory/working-memory-cache/motor-plan.md" "CONSTRAINTS" ""
     validate_field "memory/working-memory-cache/motor-plan.md" "STEP_BY_STEP_BLUEPRINT" ""
+    validate_field "memory/working-memory-cache/motor-plan.md" "EDGE_CASES" ""
     validate_field "memory/working-memory-cache/motor-plan.md" "CONFIDENCE" "HIGH MEDIUM LOW"
 fi
 
