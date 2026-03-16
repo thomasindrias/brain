@@ -19,12 +19,15 @@ export function BrainNode({ data }: NodeProps<BrainNodeData>) {
   // Conditional nodes are dimmed when pending
   const isConditionalPending = conditional && status === 'pending';
 
+  // Skipped nodes are dimmed
+  const isSkipped = status === 'skipped';
+
   // Pulse animation when active
   const pulseClass = status === 'active' ? 'animate-pulse' : '';
 
   // Border style
   const borderStyle = isConditionalPending ? 'border-dashed' : 'border-solid';
-  const opacityClass = isConditionalPending ? 'opacity-35' : '';
+  const opacityClass = (isConditionalPending || isSkipped) ? 'opacity-35' : '';
 
   return (
     <>
@@ -60,6 +63,7 @@ function getStatusValue(fields: Record<string, string>): string | null {
     'MEMORIES',
     'INTENT',
     'CONFLICT_LEVEL',
+    'MATCHED_ROUTINE',
   ];
 
   for (const key of statusKeys) {

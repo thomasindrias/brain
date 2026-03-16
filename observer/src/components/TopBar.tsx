@@ -74,7 +74,7 @@ export function TopBar({
             title={isConnected ? 'Connected' : 'Disconnected'}
           />
           <span className="text-xs text-zinc-400">
-            {isConnected ? 'Connected' : 'Disconnected'}
+            {isConnected ? 'Connected' : 'Reconnecting...'}
           </span>
         </div>
       </div>

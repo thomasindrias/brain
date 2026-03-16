@@ -72,7 +72,8 @@ export type SessionSnapshot = {
 // UI actions
 export type UIAction =
   | { type: 'SELECT_NODE'; agent: string | null }
-  | { type: 'VIEW_SESSION'; sessionId: string | null };
+  | { type: 'VIEW_SESSION'; sessionId: string | null }
+  | { type: 'CHECK_IDLE' };
 
 // Background agent status tracking
 export type BackgroundAgentStatus = {
@@ -95,4 +96,6 @@ export type BrainState = {
   loopStartTs: number | null;
   lastEventTs: number | null;
   backgroundAgents: BackgroundAgentStatus;
+  basalGangliaShortcut: boolean;
+  matchedRoutine: string | null;
 };

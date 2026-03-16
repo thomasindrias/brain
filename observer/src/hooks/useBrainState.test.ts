@@ -456,15 +456,54 @@ describe('brainReducer', () => {
     });
 
     it('should switch to historical view on VIEW_SESSION', () => {
+      // Set up state with a session in history
+      const stateWithHistory: BrainState = {
+        ...initialState,
+        sessionHistory: [
+          {
+            id: 'session-123',
+            buffers: {
+              'amygdala': { THREAT_LEVEL: 'SAFE' },
+            },
+            events: [
+              {
+                type: 'phase',
+                phase: '0',
+                agent: 'sensory-buffer',
+                status: 'start',
+                ts: 1000,
+              },
+              {
+                type: 'phase',
+                phase: '0',
+                agent: 'sensory-buffer',
+                status: 'complete',
+                ts: 1100,
+              },
+            ],
+            neuro: {
+              noradrenaline: 'HIGH',
+              acetylcholine: 'MEDIUM',
+              serotonin: 'LOW',
+              dopamine: 'MEDIUM',
+            },
+            startTs: 1000,
+            endTs: 1100,
+          },
+        ],
+      };
+
       const action = {
         type: 'VIEW_SESSION' as const,
         sessionId: 'session-123',
       };
 
-      const newState = brainReducer(initialState, action);
+      const newState = brainReducer(stateWithHistory, action);
 
       expect(newState.viewingSession).toBe('session-123');
       expect(newState.isLive).toBe(false);
+      expect(newState.neuro.noradrenaline).toBe('HIGH');
+      expect(newState.sessionHistory).toHaveLength(1); // History preserved
     });
 
     it('should return to live mode when VIEW_SESSION receives null', () => {

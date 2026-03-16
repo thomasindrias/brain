@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useReducer, useEffect } from 'react';
 import type {
   BrainState,
   BrainNodeData,
@@ -10,7 +10,7 @@ import type {
   Snapshot,
   SessionSnapshot,
 } from '../lib/types';
-import { DEFAULT_NEURO_LEVELS } from '../lib/constants';
+import { DEFAULT_NEURO_LEVELS, IDLE_TIMEOUT_MS } from '../lib/constants';
 
 // Node definitions with phase, label, agent, and conditional flags
 const createNode = (
@@ -60,6 +60,8 @@ export const initialState: BrainState = {
     'reward-system': 'idle',
     'default-mode': 'idle',
   },
+  basalGangliaShortcut: false,
+  matchedRoutine: null,
 };
 
 // Pure reducer function
@@ -77,11 +79,67 @@ export function brainReducer(
     }
 
     if (action.type === 'VIEW_SESSION') {
+      // If switching back to live view, just update flags
+      if (action.sessionId === null) {
+        return {
+          ...state,
+          viewingSession: null,
+          isLive: true,
+        };
+      }
+
+      // Find the session snapshot
+      const snapshot = state.sessionHistory.find(s => s.id === action.sessionId);
+      if (!snapshot) {
+        return state; // Session not found, no-op
+      }
+
+      // Reconstruct state from snapshot
+      let newState = { ...initialState };
+
+      // Replay events to reconstruct node states
+      for (const event of snapshot.events) {
+        newState = handlePhaseEvent(newState, event);
+      }
+
+      // Overlay buffer fields from snapshot
+      for (const [agent, fields] of Object.entries(snapshot.buffers)) {
+        if (newState.nodes[agent]) {
+          newState.nodes[agent] = {
+            ...newState.nodes[agent],
+            fields: {
+              ...newState.nodes[agent].fields,
+              ...fields,
+            },
+          };
+        }
+      }
+
+      // Set neuromodulator levels and viewing flags
       return {
-        ...state,
+        ...newState,
+        neuro: snapshot.neuro,
         viewingSession: action.sessionId,
-        isLive: action.sessionId === null,
+        isLive: false,
+        sessionHistory: state.sessionHistory, // Preserve history
+        loopStartTs: snapshot.startTs,
+        lastEventTs: snapshot.endTs ?? snapshot.startTs,
       };
+    }
+
+    if (action.type === 'CHECK_IDLE') {
+      // Check if idle timeout has elapsed
+      if (state.lastEventTs) {
+        const now = Date.now();
+        const elapsed = now - state.lastEventTs;
+        if (elapsed >= IDLE_TIMEOUT_MS && state.isLive) {
+          return {
+            ...state,
+            isLive: false,
+          };
+        }
+      }
+      return state;
     }
 
     // Handle WebSocket messages
@@ -153,6 +211,8 @@ function handlePhaseEvent(state: BrainState, event: PhaseEvent): BrainState {
       lastEventTs: ts,
       rePlanCount: 0,
       feedbackLoopActive: false,
+      basalGangliaShortcut: false,
+      matchedRoutine: null,
     };
   }
 
@@ -185,17 +245,46 @@ function handlePhaseEvent(state: BrainState, event: PhaseEvent): BrainState {
     }
   }
 
+  // Handle Basal Ganglia shortcut
+  let newBasalGangliaShortcut = state.basalGangliaShortcut;
+  let newMatchedRoutine = state.matchedRoutine;
+  let updatedNodes = {
+    ...state.nodes,
+    [agent]: updatedNode,
+  };
+
+  if (agent === 'basal-ganglia' && status === 'complete' && result === 'match') {
+    newBasalGangliaShortcut = true;
+    // Extract matched routine text from fields if available
+    newMatchedRoutine = updatedNode.fields['MATCHED_ROUTINE'] || 'routine';
+
+    // Mark all downstream nodes as skipped
+    const downstreamAgents = [
+      'amygdala', 'hippocampus', 'language-center',
+      'visual-cortex', 'parietal-insula', 'anterior-cingulate',
+      'integration', 'prefrontal', 'cerebellum', 'motor-cortex', 'consolidation'
+    ];
+
+    for (const downstreamAgent of downstreamAgents) {
+      if (updatedNodes[downstreamAgent]) {
+        updatedNodes[downstreamAgent] = {
+          ...updatedNodes[downstreamAgent],
+          status: 'skipped',
+        };
+      }
+    }
+  }
+
   return {
     ...state,
-    nodes: {
-      ...state.nodes,
-      [agent]: updatedNode,
-    },
+    nodes: updatedNodes,
     currentPhase: phase,
     loopStartTs: state.loopStartTs ?? (phase === '0' && status === 'start' ? ts : null),
     lastEventTs: ts,
     rePlanCount: newRePlanCount,
     feedbackLoopActive: newFeedbackLoopActive,
+    basalGangliaShortcut: newBasalGangliaShortcut,
+    matchedRoutine: newMatchedRoutine,
   };
 }
 
@@ -300,5 +389,16 @@ function extractEvents(state: BrainState): PhaseEvent[] {
 
 // React hook wrapper
 export function useBrainState() {
-  return useReducer(brainReducer, initialState);
+  const [state, dispatch] = useReducer(brainReducer, initialState);
+
+  // Idle timeout check - runs every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch({ type: 'CHECK_IDLE' });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return [state, dispatch] as const;
 }

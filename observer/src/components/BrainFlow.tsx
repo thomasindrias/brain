@@ -54,11 +54,14 @@ function BrainFlowInner({ state, onNodeClick }: BrainFlowProps) {
       const sourceNode = state.nodes[edge.source];
       const targetNode = state.nodes[edge.target];
 
-      // Feedback loop edge visibility
+      // Feedback loop edge visibility with label
       if (edge.id === 'e-cb-pf-feedback') {
         return {
           ...edge,
           hidden: !state.feedbackLoopActive,
+          label: state.feedbackLoopActive ? `${state.rePlanCount}/2` : undefined,
+          labelStyle: { fill: '#ef4444', fontWeight: 700 },
+          labelBgStyle: { fill: '#27272a' },
         };
       }
 
@@ -88,7 +91,7 @@ function BrainFlowInner({ state, onNodeClick }: BrainFlowProps) {
     });
 
     setEdges(updatedEdges);
-  }, [state.nodes, state.feedbackLoopActive, setEdges]);
+  }, [state.nodes, state.feedbackLoopActive, state.rePlanCount, setEdges]);
 
   // Handle node click
   const handleNodeClick: NodeMouseHandler = (_event, node) => {
