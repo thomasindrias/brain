@@ -5,7 +5,6 @@ import {
   useNodesState,
   useEdgesState,
   Background,
-  Controls,
 } from '@xyflow/react';
 import type { Node, Edge, NodeMouseHandler } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -113,7 +112,6 @@ function BrainFlowInner({ state, onNodeClick }: BrainFlowProps) {
         maxZoom={1.5}
       >
         <Background color="#27272a" gap={16} />
-        <Controls />
       </ReactFlow>
 
       {/* Idle overlay when not live AND not viewing history */}

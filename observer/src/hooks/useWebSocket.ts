@@ -52,8 +52,8 @@ export function useWebSocket(
         }, reconnectDelayRef.current);
       };
 
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+      ws.onerror = () => {
+        // Suppress errors from StrictMode double-mount teardown
       };
 
       ws.onmessage = (event) => {

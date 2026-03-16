@@ -37,7 +37,7 @@ export function App() {
   }, [state.selectedNode, state.nodes]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
+    <div className="h-screen bg-zinc-950 text-zinc-100 flex flex-col overflow-hidden">
       {/* Top Bar */}
       <TopBar
         isLive={state.isLive}
@@ -55,11 +55,9 @@ export function App() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col relative">
+      <div className="flex-1 relative min-h-0">
         {/* Brain Flow Canvas */}
-        <div className="flex-1">
-          <BrainFlow state={state} onNodeClick={handleNodeClick} />
-        </div>
+        <BrainFlow state={state} onNodeClick={handleNodeClick} />
 
         {/* Background Agents - Positioned at bottom-right */}
         <div className="absolute bottom-4 right-4 z-10">

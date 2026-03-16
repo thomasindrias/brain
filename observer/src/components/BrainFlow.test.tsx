@@ -25,7 +25,6 @@ vi.mock('@xyflow/react', () => ({
     <div data-testid="react-flow-provider">{children}</div>
   ),
   Background: () => <div data-testid="background" />,
-  Controls: () => <div data-testid="controls" />,
   useNodesState: (initialNodes: any) => {
     const [nodes, setNodes] = [initialNodes, vi.fn()];
     const onNodesChange = vi.fn();
@@ -98,11 +97,10 @@ describe('BrainFlow', () => {
     expect(screen.getByTestId('react-flow-provider')).toBeInTheDocument();
   });
 
-  it('renders ReactFlow with Background and Controls', () => {
+  it('renders ReactFlow with Background', () => {
     const onNodeClick = vi.fn();
     render(<BrainFlow state={initialState} onNodeClick={onNodeClick} />);
 
     expect(screen.getByTestId('background')).toBeInTheDocument();
-    expect(screen.getByTestId('controls')).toBeInTheDocument();
   });
 });
