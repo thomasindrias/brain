@@ -176,6 +176,9 @@ export async function createServer(options: ServerOptions) {
   await new Promise<void>((resolve) => {
     httpServer.listen(port, () => {
       console.log(`Brain OS Observer Server listening on port ${port}`);
+      console.log(`Watching buffers: ${watchDir}`);
+      console.log(`Brain root: ${brainRoot}`);
+      console.log(`Neuromodulator file: ${neuroFilePath}`);
       resolve();
     });
   });

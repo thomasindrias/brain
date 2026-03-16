@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { parseKeyValue, parseNeuroTable } from './parser';
 import type { NeuroLevels } from '../src/lib/types';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 describe('parseKeyValue', () => {
   it('parses single-line key-value pairs', () => {
@@ -200,5 +202,56 @@ describe('parseNeuroTable', () => {
     expect(result.acetylcholine).toBe('LOW');
     expect(result.serotonin).toBe('MEDIUM');
     expect(result.dopamine).toBe('HIGH');
+  });
+});
+
+describe('parseKeyValue with fixture files', () => {
+  const fixturesDir = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'test', 'fixtures');
+
+  it('parses signal-amygdala-safe.md', async () => {
+    const content = await fs.readFile(path.join(fixturesDir, 'signal-amygdala-safe.md'), 'utf-8');
+    const result = parseKeyValue(content);
+
+    expect(result.THREAT_LEVEL).toBe('SAFE');
+    expect(result.THREAT_TYPE).toBe('NONE');
+    expect(result.EMOTIONAL_VALENCE).toBe('+1');
+    expect(result.RECOMMENDED_ACTION).toBe('proceed');
+  });
+
+  it('parses signal-amygdala-elevated.md', async () => {
+    const content = await fs.readFile(path.join(fixturesDir, 'signal-amygdala-elevated.md'), 'utf-8');
+    const result = parseKeyValue(content);
+
+    expect(result.THREAT_LEVEL).toBe('ELEVATED');
+    expect(result.THREAT_TYPE).toBe('potential_code_injection');
+    expect(result.EMOTIONAL_VALENCE).toBe('-2');
+    expect(result.RECOMMENDED_ACTION).toBe('re-analyze');
+    expect(result.CONTEXT).toContain('eval()');
+  });
+
+  it('parses motor-plan-multiline.md with multiline values', async () => {
+    const content = await fs.readFile(path.join(fixturesDir, 'motor-plan-multiline.md'), 'utf-8');
+    const result = parseKeyValue(content);
+
+    expect(result.APPROACH).toBe('Direct implementation');
+    expect(result.STEP_BY_STEP_BLUEPRINT).toContain('1. Read the target file');
+    expect(result.STEP_BY_STEP_BLUEPRINT).toContain('2. Identify the function to modify');
+    expect(result.STEP_BY_STEP_BLUEPRINT).toContain('5. Commit if tests pass');
+    expect(result.CONFIDENCE).toBe('HIGH');
+    expect(result.ESTIMATED_COMPLEXITY).toBe('LOW');
+  });
+});
+
+describe('parseNeuroTable with fixture files', () => {
+  const fixturesDir = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'test', 'fixtures');
+
+  it('parses state-neuromodulators.md', async () => {
+    const content = await fs.readFile(path.join(fixturesDir, 'state-neuromodulators.md'), 'utf-8');
+    const result = parseNeuroTable(content);
+
+    expect(result.noradrenaline).toBe('LOW');
+    expect(result.acetylcholine).toBe('MEDIUM');
+    expect(result.serotonin).toBe('HIGH');
+    expect(result.dopamine).toBe('MEDIUM');
   });
 });
