@@ -1,6 +1,6 @@
 import express from 'express';
 import { createServer as createHttpServer } from 'http';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { createWatcher } from './watcher';
@@ -89,7 +89,7 @@ export async function createServer(options: ServerOptions) {
   });
 
   // Track connected clients
-  const clients = new Set<any>();
+  const clients = new Set<WebSocket>();
 
   // Handle new WebSocket connections
   wss.on('connection', (ws) => {
@@ -117,7 +117,7 @@ export async function createServer(options: ServerOptions) {
   const broadcast = (message: WSMessage) => {
     const data = JSON.stringify(message);
     for (const client of clients) {
-      if (client.readyState === 1) { // OPEN state
+      if (client.readyState === WebSocket.OPEN) {
         client.send(data);
       }
     }
@@ -129,7 +129,17 @@ export async function createServer(options: ServerOptions) {
   const handleWatcherEvent = (event: WSMessage) => {
     // Update state
     if (event.type === 'buffer') {
-      state.currentBuffers[event.file] = event.fields;
+      // Normalize filename to agent name for storage
+      const agent = FILE_TO_AGENT[event.file] || event.file;
+      state.currentBuffers[agent] = event.fields;
+
+      // Broadcast with agent name instead of filename
+      const normalizedEvent = {
+        ...event,
+        agent,
+      };
+      broadcast(normalizedEvent);
+      return;
     } else if (event.type === 'neuro') {
       state.currentNeuro = event.levels;
     } else if (event.type === 'phase') {
@@ -211,7 +221,9 @@ async function loadInitialState(
         const filePath = path.join(watchDir, file);
         const content = await fs.readFile(filePath, 'utf-8');
         const fields = parseKeyValue(content);
-        state.currentBuffers[file] = fields;
+        // Normalize filename to agent name
+        const agent = FILE_TO_AGENT[file] || file;
+        state.currentBuffers[agent] = fields;
       } else if (file === 'event-log.jsonl') {
         // Load event log
         const filePath = path.join(watchDir, file);

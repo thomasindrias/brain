@@ -45,6 +45,7 @@ export function App() {
         rePlanCount={state.rePlanCount}
         loopStartTs={state.loopStartTs}
         sessionHistory={state.sessionHistory}
+        viewingSession={state.viewingSession}
         onSelectSession={handleViewSession}
       />
 

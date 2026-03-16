@@ -14,6 +14,10 @@ export function useWebSocket(
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<number | null>(null);
   const reconnectDelayRef = useRef<number>(WS_RECONNECT_BASE_MS);
+  const onMessageRef = useRef(onMessage);
+
+  // Keep onMessageRef up to date
+  onMessageRef.current = onMessage;
 
   useEffect(() => {
     let isCleaningUp = false;
@@ -55,7 +59,7 @@ export function useWebSocket(
       ws.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data) as WSMessage;
-          onMessage(message);
+          onMessageRef.current(message);
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error);
         }
@@ -78,7 +82,7 @@ export function useWebSocket(
         wsRef.current = null;
       }
     };
-  }, [url, onMessage]);
+  }, [url]);
 
   return { connected };
 }

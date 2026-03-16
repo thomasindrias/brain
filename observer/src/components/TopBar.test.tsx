@@ -35,6 +35,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={[]}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -50,6 +51,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={[]}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -67,6 +69,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={[]}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -84,6 +87,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={[]}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -100,6 +104,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={[]}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -116,6 +121,7 @@ describe('TopBar', () => {
         rePlanCount={2}
         loopStartTs={null}
         sessionHistory={[]}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -135,6 +141,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={startTs}
         sessionHistory={[]}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -156,6 +163,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={[]}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -176,6 +184,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={sessions}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );
@@ -198,6 +207,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={sessions}
+        viewingSession={null}
         onSelectSession={mockOnSelectSession}
       />
     );
@@ -218,6 +228,7 @@ describe('TopBar', () => {
         rePlanCount={0}
         loopStartTs={null}
         sessionHistory={sessions}
+        viewingSession={null}
         onSelectSession={() => {}}
       />
     );

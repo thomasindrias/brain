@@ -116,8 +116,8 @@ function BrainFlowInner({ state, onNodeClick }: BrainFlowProps) {
         <Controls />
       </ReactFlow>
 
-      {/* Idle overlay when not live */}
-      {!state.isLive && (
+      {/* Idle overlay when not live AND not viewing history */}
+      {!state.isLive && !state.viewingSession && (
         <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/80 pointer-events-none">
           <div className="text-xl text-zinc-400 font-medium">
             Waiting for signal...

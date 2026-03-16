@@ -10,7 +10,7 @@ import type {
   Snapshot,
   SessionSnapshot,
 } from '../lib/types';
-import { DEFAULT_NEURO_LEVELS, IDLE_TIMEOUT_MS } from '../lib/constants';
+import { DEFAULT_NEURO_LEVELS, IDLE_TIMEOUT_MS, FILE_TO_AGENT } from '../lib/constants';
 
 // Node definitions with phase, label, agent, and conditional flags
 const createNode = (
@@ -102,8 +102,9 @@ export function brainReducer(
         newState = handlePhaseEvent(newState, event);
       }
 
-      // Overlay buffer fields from snapshot
-      for (const [agent, fields] of Object.entries(snapshot.buffers)) {
+      // Overlay buffer fields from snapshot (map filenames to agent names)
+      for (const [fileOrAgent, fields] of Object.entries(snapshot.buffers)) {
+        const agent = FILE_TO_AGENT[fileOrAgent] || fileOrAgent;
         if (newState.nodes[agent]) {
           newState.nodes[agent] = {
             ...newState.nodes[agent],
@@ -328,8 +329,9 @@ function handleSnapshot(state: BrainState, snapshot: Snapshot): BrainState {
     newState = handlePhaseEvent(newState, event);
   }
 
-  // Overlay buffer fields from snapshot
-  for (const [agent, fields] of Object.entries(snapshot.buffers)) {
+  // Overlay buffer fields from snapshot (map filenames to agent names)
+  for (const [fileOrAgent, fields] of Object.entries(snapshot.buffers)) {
+    const agent = FILE_TO_AGENT[fileOrAgent] || fileOrAgent;
     if (newState.nodes[agent]) {
       newState.nodes[agent] = {
         ...newState.nodes[agent],
@@ -343,6 +345,9 @@ function handleSnapshot(state: BrainState, snapshot: Snapshot): BrainState {
 
   // Set neuromodulator levels
   newState.neuro = snapshot.neuro;
+
+  // Preserve existing session history
+  newState.sessionHistory = state.sessionHistory;
 
   return newState;
 }

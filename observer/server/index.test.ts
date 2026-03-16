@@ -88,9 +88,9 @@ describe('WebSocket Server', () => {
     expect(snapshot.events).toBeDefined();
     expect(snapshot.neuro).toBeDefined();
 
-    // Verify buffers were loaded
-    expect(snapshot.buffers['signal-amygdala.md']).toBeDefined();
-    expect(snapshot.buffers['signal-amygdala.md'].THREAT_LEVEL).toBe('SAFE');
+    // Verify buffers were loaded (now keyed by agent name, not filename)
+    expect(snapshot.buffers['amygdala']).toBeDefined();
+    expect(snapshot.buffers['amygdala'].THREAT_LEVEL).toBe('SAFE');
 
     // Verify neuro was loaded
     expect(snapshot.neuro.noradrenaline).toBe('HIGH');

@@ -7,6 +7,7 @@ type TopBarProps = {
   rePlanCount: number;
   loopStartTs: number | null;
   sessionHistory: SessionSnapshot[];
+  viewingSession: string | null;
   onSelectSession: (sessionId: string | null) => void;
 };
 
@@ -16,6 +17,7 @@ export function TopBar({
   rePlanCount,
   loopStartTs,
   sessionHistory,
+  viewingSession,
   onSelectSession,
 }: TopBarProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -97,7 +99,7 @@ export function TopBar({
 
         {/* Session History Dropdown */}
         <select
-          value={isLive ? '' : sessionHistory.find((s) => !isLive)?.id || ''}
+          value={viewingSession || ''}
           onChange={handleSessionChange}
           className="bg-zinc-800 text-zinc-300 text-sm border border-zinc-700 rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
