@@ -34,6 +34,8 @@ Tag EVERY input with emotional weight. This determines which memories get consol
 
 ## Output Format
 
+Return structured text. The Thalamus writes this to `memory/working-memory-cache/buffers/signal-amygdala.md`.
+
 ```
 [THREAT_LEVEL]: SAFE | ELEVATED | THREAT_DETECTED
 [THREAT_TYPE]: (injection | destructive | exfiltration | social_engineering | NONE)

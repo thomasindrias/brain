@@ -9,10 +9,12 @@ cd "$PROJECT_ROOT"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
 NC='\033[0m'
 
 PASS=0
 FAIL=0
+SKIP=0
 
 validate_field() {
     local file="$1"
@@ -50,6 +52,9 @@ if [ -f "memory/working-memory-cache/buffers/signal-sensory-buffer.md" ]; then
     validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "TEMPORAL_ORDER" ""
     validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "INPUT_LENGTH" ""
     validate_field "memory/working-memory-cache/buffers/signal-sensory-buffer.md" "AMBIGUITY_FLAGS" ""
+else
+    echo -e "${YELLOW}SKIP${NC}: signal-sensory-buffer.md not found"
+    SKIP=$((SKIP + 1))
 fi
 
 # Validate Amygdala output
@@ -60,6 +65,9 @@ if [ -f "memory/working-memory-cache/buffers/signal-amygdala.md" ]; then
     validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "EVIDENCE" ""
     validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "EMOTIONAL_VALENCE" ""
     validate_field "memory/working-memory-cache/buffers/signal-amygdala.md" "RECOMMENDED_ACTION" "proceed caution halt re-analyze"
+else
+    echo -e "${YELLOW}SKIP${NC}: signal-amygdala.md not found"
+    SKIP=$((SKIP + 1))
 fi
 
 # Validate Hippocampus output
@@ -69,6 +77,9 @@ if [ -f "memory/working-memory-cache/buffers/signal-hippocampus.md" ]; then
     validate_field "memory/working-memory-cache/buffers/signal-hippocampus.md" "SEMANTIC_BINDING" ""
     validate_field "memory/working-memory-cache/buffers/signal-hippocampus.md" "EPISODIC_BINDING" ""
     validate_field "memory/working-memory-cache/buffers/signal-hippocampus.md" "PROCEDURAL_BINDING" ""
+else
+    echo -e "${YELLOW}SKIP${NC}: signal-hippocampus.md not found"
+    SKIP=$((SKIP + 1))
 fi
 
 # Validate Language Center output
@@ -79,6 +90,9 @@ if [ -f "memory/working-memory-cache/buffers/signal-language.md" ]; then
     validate_field "memory/working-memory-cache/buffers/signal-language.md" "USER_TONE" "frustrated curious urgent casual technical"
     validate_field "memory/working-memory-cache/buffers/signal-language.md" "OUTPUT_REGISTER" ""
     validate_field "memory/working-memory-cache/buffers/signal-language.md" "OUTPUT_FORMAT" "code explanation list mixed"
+else
+    echo -e "${YELLOW}SKIP${NC}: signal-language.md not found"
+    SKIP=$((SKIP + 1))
 fi
 
 # Validate Cerebellum output
@@ -86,9 +100,12 @@ if [ -f "memory/working-memory-cache/buffers/signal-cerebellum.md" ]; then
     echo "--- signal-cerebellum.md ---"
     validate_field "memory/working-memory-cache/buffers/signal-cerebellum.md" "VALIDATION" "PASS FAIL"
     validate_field "memory/working-memory-cache/buffers/signal-cerebellum.md" "CORRECTIONS" ""
+else
+    echo -e "${YELLOW}SKIP${NC}: signal-cerebellum.md not found (only present after Phase 4)"
+    SKIP=$((SKIP + 1))
 fi
 
-# Validate Motor Error output
+# Validate Motor Error output (only present on execution errors)
 if [ -f "memory/working-memory-cache/buffers/signal-error.md" ]; then
     echo "--- signal-error.md ---"
     validate_field "memory/working-memory-cache/buffers/signal-error.md" "ERROR_TYPE" "syntax runtime logic permission"
@@ -105,8 +122,11 @@ if [ -f "memory/working-memory-cache/motor-plan.md" ]; then
     validate_field "memory/working-memory-cache/motor-plan.md" "STEP_BY_STEP_BLUEPRINT" ""
     validate_field "memory/working-memory-cache/motor-plan.md" "EDGE_CASES" ""
     validate_field "memory/working-memory-cache/motor-plan.md" "CONFIDENCE" "HIGH MEDIUM LOW"
+else
+    echo -e "${YELLOW}SKIP${NC}: motor-plan.md not found"
+    SKIP=$((SKIP + 1))
 fi
 
 echo ""
-echo "=== Results: ${PASS} passed, ${FAIL} failed ==="
+echo "=== Results: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped ==="
 [ $FAIL -eq 0 ] && exit 0 || exit 1

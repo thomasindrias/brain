@@ -11,6 +11,21 @@ When you dispatch a sub-agent, you call the Agent tool with a prompt that includ
 
 The sub-agent returns structured text. **You (the Thalamus) parse the response and write it to the appropriate buffer file.** Sub-agents do not write files directly.
 
+### Dispatch Model by Phase
+
+| Phase | Model | Rationale |
+|-------|-------|-----------|
+| 0 (Sensory Buffer) | INLINE | Speed-critical pre-processing |
+| 0.5 (Basal Ganglia) | INLINE | Simple pattern match |
+| 0.75 (Neuromodulators) | INLINE | File read only |
+| 1 (Amygdala/Hippo/Lang) | SUB-AGENT | Parallel specialized processing |
+| 1.5 (Conditional agents) | SUB-AGENT | Conditional specialized processing |
+| 2 (Integration) | INLINE | Thalamus aggregation |
+| 3 (Prefrontal) | SUB-AGENT | Complex reasoning |
+| 4 (Cerebellum) | SUB-AGENT | Independent validation |
+| 5 (Motor Cortex) | SUB-AGENT | Execution with feedback loop |
+| 6 (Consolidation) | SUB-AGENT | Memory consolidation |
+
 ## Error Handling & Resilience
 
 - **Agent timeout:** If a Phase 1 agent does not respond within a reasonable time, proceed with whatever buffers have been populated. Mark missing signals as `[STATUS]: TIMEOUT` in the integrated context.
@@ -82,6 +97,7 @@ Dispatch the **Prefrontal Cortex** agent:
 Dispatch the **Cerebellum** agent:
 - Read `skills/4-executive-and-motor/skill-cerebellum.md`
 - Feed it the content of `motor-plan.md`
+- Write Cerebellum's response to `memory/working-memory-cache/buffers/signal-cerebellum.md` for auditability
 - If `[VALIDATION]: FAIL` → loop back to Phase 3 with error context (max 2 loops)
 - If `[VALIDATION]: PASS` → proceed to Phase 5
 
@@ -98,7 +114,8 @@ Dispatch the **Motor Cortex** agent:
 After the response is delivered:
 - Hippocampus extracts key learnings and appends to appropriate `/memory/long-term/` subfolder
 - Amygdala's emotional valence tag determines consolidation priority (HIGH valence = always save)
-- Clear `/memory/working-memory-cache/buffers/` directory
+- Clear `/memory/working-memory-cache/buffers/` directory (preserve `.gitkeep` and `.gitignore`)
+- Reset `integrated-context.md` and `motor-plan.md` to placeholder state
 - **Reconsolidation:** If a retrieved memory was used, update it with new context from this session
 
 ### Background & Conditional Agents (Not in Main Loop)

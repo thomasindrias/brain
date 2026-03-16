@@ -30,6 +30,8 @@ When a memory is retrieved, it becomes malleable. After the session:
 
 ## Retrieval Output Format
 
+Return structured text. The Thalamus writes this to `memory/working-memory-cache/buffers/signal-hippocampus.md`.
+
 ```
 [SEMANTIC_BINDING]: (1-3 user facts relevant to this prompt)
 [EPISODIC_BINDING]: (Most recent relevant interaction, or NONE)
