@@ -23,32 +23,38 @@ export type BrainNodeData = {
   conditional?: boolean;
 };
 
+// Event log status (distinct from UI NodeStatus)
+export type EventStatus = 'start' | 'complete' | 'skipped';
+
 // WebSocket message types
 export type PhaseEvent = {
   type: 'phase';
   phase: string;
   agent: string;
-  status: NodeStatus;
-  timestamp: number;
+  status: EventStatus;
+  result?: string;
+  ts: number;
 };
 
 export type BufferUpdate = {
   type: 'buffer';
+  file: string;
   agent: string;
-  filename: string;
   fields: Record<string, string>;
-  timestamp: number;
+  ts: number;
 };
 
 export type NeuroUpdate = {
   type: 'neuro';
   levels: NeuroLevels;
-  timestamp: number;
+  ts: number;
 };
 
 export type Snapshot = {
   type: 'snapshot';
-  data: SessionSnapshot;
+  buffers: Record<string, Record<string, string>>;
+  events: PhaseEvent[];
+  neuro: NeuroLevels;
 };
 
 export type WSMessage = PhaseEvent | BufferUpdate | NeuroUpdate | Snapshot;
