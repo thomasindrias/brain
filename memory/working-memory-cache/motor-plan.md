@@ -1,3 +1,3 @@
 # Motor Plan
 
-_No active plan. Awaiting Prefrontal Cortex output._
+(awaiting next signal)

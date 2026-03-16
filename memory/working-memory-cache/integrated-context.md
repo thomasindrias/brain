@@ -1,3 +1,3 @@
 # Integrated Context
 
-_No active signal. Awaiting Thalamus dispatch._
+(awaiting next signal)
