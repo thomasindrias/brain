@@ -32,7 +32,7 @@ The sub-agent returns structured text. **You (the Thalamus) parse the response a
 | 2 (Integration) | INLINE | Thalamus aggregation |
 | 3 (Prefrontal) | SUB-AGENT | Complex reasoning |
 | 4 (Cerebellum) | SUB-AGENT | Independent validation |
-| 5 (Motor Cortex) | SUB-AGENT | Execution with feedback loop |
+| 5 (Motor Cortex) | INLINE | Execution is substrate-level — same neural tissue as routing |
 | 6 (Consolidation) | SUB-AGENT | Memory consolidation |
 
 ### Event Logging (for Observer)
@@ -228,13 +228,24 @@ Dispatch the **Cerebellum** agent:
 - If `[VALIDATION]: FAIL` → loop back to Phase 3 with error context (max 2 loops)
 - If `[VALIDATION]: PASS` → proceed to Phase 5
 
-### Phase 5: Execution (with feedback loop)
+### Phase 5: Execution (Inline, with Feedback Loop)
 
-Dispatch the **Motor Cortex** agent:
-- Read `${CLAUDE_PLUGIN_ROOT}/regions/4-executive-and-motor/skill-motor-cortex.md`
-- Feed it the content of `SESSION_BUFFERS/motor-plan.md`
-- Produce the final output for the user
-- **Feedback loop:** If execution produces errors, write to `SESSION_BUFFERS/signal-error.md` and route back through Cerebellum -> Prefrontal for correction
+Execute the motor plan INLINE — do not dispatch a sub-agent. The Thalamus IS
+the neural substrate on which the Motor Cortex operates.
+
+Following the behavioral spec in `${CLAUDE_PLUGIN_ROOT}/regions/4-executive-and-motor/skill-motor-cortex.md`:
+1. Read `SESSION_BUFFERS/motor-plan.md` (already in context from Phase 3/4)
+2. Translate each blueprint step into executable action (code, commands, prose)
+3. Format output according to Language Center's `[OUTPUT_REGISTER]` and `[OUTPUT_FORMAT]`
+4. Match emotional tone from Parietal-Insula's recommendation (if Phase 1.5 fired)
+5. Execute exactly — do NOT add logic, features, or improvements beyond the blueprint
+6. If blueprint is incomplete or unclear, do NOT guess — signal error
+
+**Feedback loop (preserved):** If execution produces an error:
+1. Write error to `SESSION_BUFFERS/signal-error.md` (format per Motor Cortex spec)
+2. Route back through Cerebellum -> Prefrontal for correction (max 2 loops)
+
+**Observer hook:** Log `{"phase":"5","agent":"motor-cortex","status":"start"/"complete"}`
 
 ### Phase 6: Memory Consolidation
 
