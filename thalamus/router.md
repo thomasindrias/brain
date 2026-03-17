@@ -120,13 +120,28 @@ Neuromodulator overrides (applied after heuristic classification):
 | MEDIUM | 0→0.5→0.75→1→2→3→5 | 0→0.5→5 (de-escalated) | 0→0.5→0.75→1→1.5→2→3→4→5→6 (escalated) |
 | DEEP | 0→0.5→0.75→1→1.5→2→3→4→5→6 | 0→0.5→0.75→1→2→3→5 (de-escalated) | no change |
 
-### Phase 0.75: Neuromodulation Check
+### Phase 0.75: Neuromodulation Check (Two-Layer Model)
 
-Read `~/.config/brain-os/state-neuromodulators.md` to determine current cognitive mode.
+Read neuromodulator state from TWO sources:
 
-**IMPORTANT: Neuromodulator state is READ-ONLY during Phases 0-5.**
-Mutations only happen at Phase 6 (consolidation) by Reward System/Hypothalamus.
-This prevents race conditions across concurrent sessions.
+1. **Baseline state** (disk): `~/.config/brain-os/state-neuromodulators.md`
+   — Long-term modulation from previous sessions. Written atomically at Phase 6.
+
+2. **Transient state** (in-context): Session-local overrides from Reward System
+   triggers during the current session. These take precedence over baseline.
+
+Effective level = transient override if set, else baseline from disk.
+
+**Decay check (homeostatic regulation):** If `[LAST_UPDATED_TIMESTAMP]` in
+baseline state is >24 hours ago or `[SESSION_COUNT_SINCE_UPDATE]` > 5:
+- HIGH levels decay to MEDIUM
+- LOW levels recover to MEDIUM (except Noradrenaline, whose baseline is LOW)
+Decay is noted in-context but only written to disk at Phase 6.
+
+**IMPORTANT:** Baseline state file remains READ-ONLY during Phases 0-5.
+Transient overrides are context-only (not written to disk) until Phase 6
+merges them into baseline. This preserves race-condition protection while
+enabling intra-session modulation.
 
 ### Phase 1: Parallel Sensory Dispatch (Gated Activation)
 
@@ -281,3 +296,15 @@ These agents are dispatched outside the main signal flow based on specific trigg
 | Default Mode Network | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-default-mode.md` | Between tasks (idle), every 5th session, or when user prompts reflection ("what have we learned?") |
 
 These agents update `~/.config/brain-os/state-neuromodulators.md` and `LONG_TERM` but do not produce user-facing output.
+
+**Mid-session Reward System activation:** When the user gives explicit feedback
+(positive: "thanks", "perfect", "that worked" / negative: "wrong", "no",
+"that broke it"), the Reward System evaluates and produces a transient
+neuromodulator override:
+- Positive feedback -> transient Dopamine HIGH (reinforce approach)
+- Negative feedback -> transient Dopamine LOW + Acetylcholine HIGH (learn/adapt)
+- Urgency detected -> transient Noradrenaline HIGH (narrow focus)
+
+These transient overrides affect all subsequent turns in the current session
+without waiting for Phase 6. The baseline file on disk is NOT modified —
+transient state is merged into baseline only at Phase 6 consolidation.
