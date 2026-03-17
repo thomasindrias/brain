@@ -24,7 +24,7 @@ The sub-agent returns structured text. **You (the Thalamus) parse the response a
 
 | Phase | Model | Rationale |
 |-------|-------|-----------|
-| 0 (Sensory Buffer) | INLINE | Speed-critical pre-processing |
+| 0 (Sensory Buffer) | INLINE | Sensory registers are sub-500ms — fastest neural process |
 | 0.5 (Basal Ganglia) | INLINE | Simple pattern match |
 | 0.75 (Neuromodulators) | INLINE | File read only |
 | 1 (Amygdala/Hippo/Lang) | SUB-AGENT | Parallel specialized processing |
@@ -57,12 +57,24 @@ This is optional — the brain functions without it. The observer uses it for ti
 
 ## Signal Routing Protocol
 
-### Phase 0: Sensory Buffer (Pre-Processing)
+### Phase 0: Sensory Buffer (Inline Pre-Processing)
 
-Before any routing, run the **Sensory Buffer** (read `${CLAUDE_PLUGIN_ROOT}/regions/2-sensory-fusion/skill-sensory-buffer.md`):
-- Capture raw input exactly as received (text, file paths, image references)
-- Hold for 1 processing cycle to allow multi-modal binding
-- Write to `SESSION_BUFFERS/signal-sensory-buffer.md`
+Perform sensory buffering INLINE — do not dispatch a sub-agent. This mirrors
+the biological sensory register's sub-500ms processing time.
+
+Following the behavioral spec in `${CLAUDE_PLUGIN_ROOT}/regions/2-sensory-fusion/skill-sensory-buffer.md`:
+1. Capture raw input exactly as received (no parsing, no interpretation)
+2. Detect modalities: scan for image paths (.png/.jpg/.svg), URLs (http/figma.com),
+   file paths (/path or ./path), code fences, structured data (JSON/YAML)
+3. Note input length (character count)
+4. Flag ambiguities (typos, unclear references, mixed languages)
+
+Hold these as inline context — do NOT write to `signal-sensory-buffer.md` unless
+the Observer dashboard is active. Pass directly to Phase 0.5.
+
+**Observer hook (optional):** If `SESSION_BUFFERS/event-log.jsonl` exists (Observer
+is running), write the sensory buffer output to `SESSION_BUFFERS/signal-sensory-buffer.md`
+for visualization. Otherwise, skip file I/O entirely.
 
 ### Phase 0.5: Basal Ganglia (Action Selection + Depth Classification)
 
