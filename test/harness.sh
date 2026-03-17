@@ -2,6 +2,9 @@
 # test/harness.sh — Brain OS Test Runner
 # Validates that buffer outputs match expected schemas
 # Supports both plugin mode (session-scoped buffers) and legacy mode
+#
+# NOTE: In Brain OS v2, some buffer files are intentionally absent when agents
+# are gated (activation threshold not met) or phases run inline. SKIP is normal.
 
 # Resolve project root (parent of test/)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
