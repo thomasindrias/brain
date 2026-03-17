@@ -170,6 +170,29 @@ non-SHALLOW inputs.
 - `ELEVATED` + `re-analyze` -> re-dispatch Language Center with threat context before proceeding
 - `THREAT_DETECTED` + `halt` -> reject input, but explain why (don't just stop)
 
+### Phase 1.25: Depth Re-Evaluation (Adaptive Routing)
+
+After Phase 1 agents return (or are gated), re-evaluate depth classification
+INLINE. This mirrors the brain's continuous depth-of-processing adjustment —
+initial classification is a fast heuristic, but early processing results can
+reveal unexpected complexity.
+
+**Escalation triggers (MEDIUM -> DEEP):**
+- Language Center returned `[INTENT]: AMBIGUOUS`
+- Hippocampus returned contradictory procedural bindings
+- Amygdala returned `ELEVATED` (heightened processing warranted)
+
+**De-escalation triggers (DEEP -> MEDIUM):**
+- All Phase 1 agents returned simple, non-conflicting results
+- Hippocampus returned `[MEMORY_STATE]: NULL` (no relevant memory context)
+- Language Center returned clear intent with single entity
+
+Re-classification adjusts which subsequent phases execute:
+- Escalated to DEEP: enables Phase 1.5, Phase 4, Phase 6
+- De-escalated to MEDIUM: skips Phase 1.5, Phase 4, Phase 6
+
+Log: `{"phase":"1.25","agent":"depth-reeval","status":"complete","result":"<ESCALATED|UNCHANGED|DE-ESCALATED>"}`
+
 ### Phase 1.5: Conditional Sensory Dispatch
 
 After Phase 1 completes, conditionally dispatch these agents based on signal content:
