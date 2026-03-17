@@ -80,11 +80,14 @@ basal ganglia go/no-go pathways, not a literal neural implementation.
 Biological depth is continuous.
 
 Heuristics (evaluate in order, first match wins):
-1. ROUTINE_MATCH=TRUE → SHALLOW (cached response, skip to Phase 5)
-2. Image refs, Figma URLs, 3+ file paths → DEEP
-3. Keywords: "refactor", "redesign", "migrate", "architecture" → DEEP
-4. Input <80 chars, no code/file/URL modality → SHALLOW
-5. Default → MEDIUM
+1. ROUTINE_MATCH=TRUE -> SHALLOW (cached response, skip to Phase 5)
+2. Conversational/trivial patterns (greetings, single-word acknowledgments) -> SHALLOW
+3. Image refs, Figma URLs, 3+ file paths -> DEEP
+4. DEEP keywords: "refactor", "redesign", "migrate", "architecture", "implement",
+   "design system", "security audit" -> DEEP
+5. Action verb + target (fix/add/update + bug/feature/component etc.) -> MEDIUM
+6. Multi-entity escalation: 3+ distinct entities (PascalCase, file paths) -> escalate one level
+7. Default -> MEDIUM
 
 Neuromodulator overrides (applied after heuristic classification):
 - Noradrenaline HIGH → de-escalate one level (narrows focus)
