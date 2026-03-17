@@ -27,7 +27,7 @@ The sub-agent returns structured text. **You (the Thalamus) parse the response a
 | 0 (Sensory Buffer) | INLINE | Sensory registers are sub-500ms — fastest neural process |
 | 0.5 (Basal Ganglia) | INLINE | Simple pattern match |
 | 0.75 (Neuromodulators) | INLINE | File read only |
-| 1 (Amygdala/Hippo/Lang) | SUB-AGENT | Parallel specialized processing |
+| 1 (Amygdala/Hippo/Lang) | SUB-AGENT (gated) | Parallel processing with activation thresholds |
 | 1.5 (Conditional agents) | SUB-AGENT | Conditional specialized processing |
 | 2 (Integration) | INLINE | Thalamus aggregation |
 | 3 (Prefrontal) | SUB-AGENT | Complex reasoning |
@@ -128,21 +128,47 @@ Read `~/.config/brain-os/state-neuromodulators.md` to determine current cognitiv
 Mutations only happen at Phase 6 (consolidation) by Reward System/Hypothalamus.
 This prevents race conditions across concurrent sessions.
 
-### Phase 1: Parallel Sensory Dispatch (The Binding Window)
+### Phase 1: Parallel Sensory Dispatch (Gated Activation)
 
-Dispatch these sub-agents **in parallel** using the Agent tool:
+Dispatch Phase 1 sub-agents with biological activation thresholds.
+Not every region fires on every stimulus — this is more biologically
+accurate than unconditional parallel dispatch.
 
-| Agent | Skill File | Buffer Output | Purpose |
-|-------|-----------|---------------|---------|
-| Amygdala | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-amygdala.md` | `SESSION_BUFFERS/signal-amygdala.md` | Graduated threat detection + emotional valence tagging |
-| Hippocampus | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-hippocampus.md` | `SESSION_BUFFERS/signal-hippocampus.md` | Memory retrieval with reconsolidation |
-| Language Center | `${CLAUDE_PLUGIN_ROOT}/regions/2-sensory-fusion/skill-language-center.md` | `SESSION_BUFFERS/signal-language.md` | Intent parsing + output format |
+| Agent | Skill File | Buffer Output | Activation Gate |
+|-------|-----------|---------------|-----------------|
+| Language Center | `${CLAUDE_PLUGIN_ROOT}/regions/2-sensory-fusion/skill-language-center.md` | `SESSION_BUFFERS/signal-language.md` | Always (Wernicke's area processes every utterance) |
+| Amygdala | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-amygdala.md` | `SESSION_BUFFERS/signal-amygdala.md` | Conditional (novel stimulus or threat patterns) |
+| Hippocampus | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-hippocampus.md` | `SESSION_BUFFERS/signal-hippocampus.md` | Conditional (non-empty long-term memory + no session continuity) |
+
+**Language Center:** Always dispatch. Intent parsing is required for all
+non-SHALLOW inputs.
+
+**Amygdala activation gate:**
+- First message in session: ALWAYS dispatch (novel context, low threshold)
+- Subsequent messages: dispatch ONLY if input contains potential threat
+  patterns (from threat detection keyword list in skill-amygdala.md),
+  unfamiliar content, or if previous Amygdala result was ELEVATED
+- If gated (not dispatched): carry forward previous session values or
+  set inline defaults: `[THREAT_LEVEL]: SAFE`, `[EMOTIONAL_VALENCE]: 0`,
+  `[RECOMMENDED_ACTION]: proceed`
+
+**Hippocampus activation gate:**
+- Check if `LONG_TERM/` subdirectories contain any content files
+  (not just directories or initialization files)
+- If all subdirectories empty: skip and set inline `[MEMORY_STATE]: NULL`
+- **Session continuity override:** If `SESSION_BUFFERS/integrated-context.md`
+  already exists from a previous turn AND working directory unchanged,
+  skip retrieval — active memories don't need re-encoding from long-term store
+- Exception: dispatch if input references new project/technology/domain
+  not present in existing integrated context
+
+**When agents are gated:** Log `{"phase":"1","agent":"<name>","status":"skipped"}` to event-log.
 
 **Graduated Amygdala Response (NOT binary halt):**
-- `SAFE` + `proceed` → continue normally
-- `ELEVATED` + `caution` → proceed with heightened attention (Noradrenaline -> HIGH)
-- `ELEVATED` + `re-analyze` → re-dispatch Language Center with threat context before proceeding
-- `THREAT_DETECTED` + `halt` → reject input, but explain why (don't just stop)
+- `SAFE` + `proceed` -> continue normally
+- `ELEVATED` + `caution` -> proceed with heightened attention (Noradrenaline -> HIGH)
+- `ELEVATED` + `re-analyze` -> re-dispatch Language Center with threat context before proceeding
+- `THREAT_DETECTED` + `halt` -> reject input, but explain why (don't just stop)
 
 ### Phase 1.5: Conditional Sensory Dispatch
 
