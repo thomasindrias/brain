@@ -32,6 +32,7 @@ When **Serotonin is HIGH** (creative/patient mode):
 - Motor Cortex: More verbose, explanatory output
 
 ## Decay Rules (Homeostatic Regulation)
+<!-- Canonical source: thalamus/router.md Phase 0.75. Keep in sync. -->
 
 Biological neuromodulators have half-lives — they return to baseline without
 continued stimulation. Decay is checked at Phase 0.75:

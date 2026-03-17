@@ -6,6 +6,8 @@ PASS=0; FAIL=0
 fail() { echo "FAIL: $1"; FAIL=$((FAIL + 1)); }
 pass() { echo "PASS: $1"; PASS=$((PASS + 1)); }
 
+# Canonical source: thalamus/router.md Phase 0.5. Keep in sync with
+# regions/3-subconscious-networks/skill-basal-ganglia.md heuristics.
 # Classify depth based on content-aware heuristics.
 # Replaces the old <80 chars rule with conversational pattern matching
 # and adds multi-entity escalation + expanded DEEP keywords.
@@ -13,7 +15,7 @@ classify_depth() {
     local input="$1"
     local routine_match="${2:-FALSE}"
     local noradrenaline="${3:-LOW}"
-    local serotonin="${4:-DEFAULT}"
+    local serotonin="${4:-MEDIUM}"
     local acetylcholine="${5:-MEDIUM}"
 
     local depth="MEDIUM"  # default (heuristic 7)
@@ -56,7 +58,7 @@ classify_depth() {
         esac
     fi
 
-    if [ "$serotonin" = "HIGH" ] && [ "$serotonin" != "DEFAULT" ]; then
+    if [ "$serotonin" = "HIGH" ]; then
         case "$depth" in
             SHALLOW) depth="MEDIUM" ;;
             MEDIUM) depth="DEEP" ;;
@@ -96,7 +98,7 @@ result=$(classify_depth "fix the bug in auth.ts line 42" "FALSE" "HIGH")
 result=$(classify_depth "fix the bug in auth.ts line 42" "FALSE" "LOW" "HIGH")
 [ "$result" = "DEEP" ] && pass "Serotonin HIGH + MEDIUM -> DEEP" || fail "5HT HIGH + MEDIUM -> $result (expected DEEP)"
 
-result=$(classify_depth "hello" "FALSE" "LOW" "DEFAULT" "HIGH")
+result=$(classify_depth "hello" "FALSE" "LOW" "MEDIUM" "HIGH")
 [ "$result" = "MEDIUM" ] && pass "Acetylcholine HIGH + SHALLOW -> MEDIUM" || fail "ACh HIGH + SHALLOW -> $result (expected MEDIUM)"
 
 # Default case: input with code modality (has file extension) but not a DEEP keyword
@@ -136,6 +138,19 @@ result=$(classify_depth "implement the new auth flow")
 
 result=$(classify_depth "design system audit")
 [ "$result" = "DEEP" ] && pass "\"design system\" keyword -> DEEP" || fail "\"design system\" -> $result (expected DEEP)"
+
+# === v2 Edge Cases: Boundary inputs ===
+result=$(classify_depth "")
+[ "$result" = "MEDIUM" ] && pass "empty string -> MEDIUM (default)" || fail "empty string -> $result (expected MEDIUM)"
+
+result=$(classify_depth "fix")
+[ "$result" = "MEDIUM" ] && pass "\"fix\" alone (no target) -> MEDIUM (default)" || fail "\"fix\" -> $result (expected MEDIUM)"
+
+result=$(classify_depth "$(printf 'build this\nand that')")
+[ "$result" = "MEDIUM" ] && pass "multi-line non-trivial -> MEDIUM" || fail "multi-line non-trivial -> $result (expected MEDIUM)"
+
+result=$(classify_depth "$(printf 'hello\nworld')")
+[ "$result" = "SHALLOW" ] && pass "multi-line with greeting on line 1 -> SHALLOW" || fail "multi-line greeting -> $result (expected SHALLOW)"
 
 echo ""
 echo "=== Results: $PASS passed, $FAIL failed ==="

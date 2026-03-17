@@ -103,23 +103,23 @@ Heuristics (evaluate in order, first match wins):
 7. Default -> MEDIUM
 
 Neuromodulator overrides (applied after heuristic classification):
-- Noradrenaline HIGH → de-escalate one level (narrows focus)
-- Serotonin HIGH → escalate one level (broadens exploration)
-- Acetylcholine HIGH → escalate one level (enhances attention)
+- Noradrenaline HIGH -> de-escalate one level (narrows focus)
+- Serotonin HIGH -> escalate one level (broadens exploration)
+- Acetylcholine HIGH -> escalate one level (enhances attention)
 - (Dopamine does NOT affect depth — it modulates Prefrontal search width in Phase 3)
 
 #### Depth Effects on Phase Execution
-- SHALLOW: 0 → 0.5 → 5 (respond directly, all inline)
-- MEDIUM:  0 → 0.5 → 0.75 → 1(gated) → 1.25 → 2 → 3 → 5
-- DEEP:    0 → 0.5 → 0.75 → 1(gated) → 1.25 → 1.5 → 2 → 3 → 4(hybrid) → 5 → 6
+- SHALLOW: 0 -> 0.5 -> 5 (respond directly, all inline)
+- MEDIUM:  0 -> 0.5 -> 0.75 -> 1(gated) -> 1.25 -> 2 -> 3 -> 5
+- DEEP:    0 -> 0.5 -> 0.75 -> 1(gated) -> 1.25 -> 1.5 -> 2 -> 3 -> 4(hybrid) -> 5 -> 6
 
 #### Depth-to-Phase Override Matrix (neuromodulator interactions)
 
-| Depth | Base Phases | + Noradrenaline HIGH | + Serotonin HIGH |
-|-------|-------------|---------------------|-----------------|
-| SHALLOW | 0→0.5→5 | 0→0.5→5 (no change) | 0→0.5→0.75→1→2→3→5 (escalated to MEDIUM) |
-| MEDIUM | 0→0.5→0.75→1→2→3→5 | 0→0.5→5 (de-escalated) | 0→0.5→0.75→1→1.5→2→3→4→5→6 (escalated) |
-| DEEP | 0→0.5→0.75→1→1.5→2→3→4→5→6 | 0→0.5→0.75→1→2→3→5 (de-escalated) | no change |
+| Depth | Base Phases | + Noradrenaline HIGH | + Serotonin HIGH | + Acetylcholine HIGH |
+|-------|-------------|---------------------|-----------------|---------------------|
+| SHALLOW | 0->0.5->5 | no change | escalated to MEDIUM | escalated to MEDIUM |
+| MEDIUM | 0->0.5->0.75->1(gated)->1.25->2->3->5 | de-escalated to SHALLOW | escalated to DEEP | escalated to DEEP |
+| DEEP | 0->0.5->0.75->1(gated)->1.25->1.5->2->3->4(hybrid)->5->6 | de-escalated to MEDIUM | no change | no change |
 
 ### Phase 0.75: Neuromodulation Check (Two-Layer Model)
 

@@ -39,6 +39,7 @@ In addition to routine matching, classify the cognitive depth required to proces
 NOTE: Three discrete levels are a computational convenience, not a literal neural implementation. Biological depth is continuous.
 
 ### Heuristics (evaluate in order, first match wins)
+<!-- Canonical source: thalamus/router.md Phase 0.5. Keep in sync. -->
 
 1. `[ROUTINE_MATCH]: TRUE` -> `SHALLOW` (cached response, skip to Phase 5)
 2. **Conversational/trivial patterns** -> `SHALLOW`: greetings (hi/hello/hey),
@@ -62,10 +63,10 @@ classify actions by motor complexity, not stimulus magnitude. A short command
 
 After classifying depth, apply neuromodulator state overrides:
 
-- **Noradrenaline HIGH** → de-escalate one level (DEEP→MEDIUM, MEDIUM→SHALLOW). Locus coeruleus activation narrows attentional focus.
-- **Serotonin HIGH** → escalate one level (SHALLOW→MEDIUM, MEDIUM→DEEP). Dorsal raphe promotes behavioral flexibility.
-- **Acetylcholine HIGH** → escalate one level (SHALLOW→MEDIUM, MEDIUM→DEEP). Basal forebrain enhances attention.
-- **Dopamine** → does NOT affect depth. Dopamine modulates effort allocation WITHIN phases (Prefrontal search width), not WHICH phases run.
+- **Noradrenaline HIGH** -> de-escalate one level (DEEP->MEDIUM, MEDIUM->SHALLOW). Locus coeruleus activation narrows attentional focus.
+- **Serotonin HIGH** -> escalate one level (SHALLOW->MEDIUM, MEDIUM->DEEP). Dorsal raphe promotes behavioral flexibility.
+- **Acetylcholine HIGH** -> escalate one level (SHALLOW->MEDIUM, MEDIUM->DEEP). Basal forebrain enhances attention.
+- **Dopamine** -> does NOT affect depth. Dopamine modulates effort allocation WITHIN phases (Prefrontal search width), not WHICH phases run.
 
 ### IMPORTANT
 
