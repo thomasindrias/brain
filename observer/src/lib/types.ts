@@ -9,6 +9,9 @@ export type NeuroLevels = {
 // Node status states
 export type NodeStatus = 'pending' | 'active' | 'complete' | 'error' | 'skipped';
 
+// Dispatch model for a brain region
+export type DispatchModel = 'inline' | 'sub-agent' | 'hybrid';
+
 // Brain node data structure
 export type BrainNodeData = {
   phase: string;
@@ -21,6 +24,7 @@ export type BrainNodeData = {
     end?: number;
   };
   conditional?: boolean;
+  dispatch?: DispatchModel;
 };
 
 // Event log status (distinct from UI NodeStatus)

@@ -31,8 +31,21 @@ When **Serotonin is HIGH** (creative/patient mode):
 - Hippocampus: Broader memory search, include tangential associations
 - Motor Cortex: More verbose, explanatory output
 
+## Decay Rules (Homeostatic Regulation)
+<!-- Canonical source: thalamus/router.md Phase 0.75. Keep in sync. -->
+
+Biological neuromodulators have half-lives — they return to baseline without
+continued stimulation. Decay is checked at Phase 0.75:
+
+- If `[LAST_UPDATED_TIMESTAMP]` is >24 hours ago or >5 sessions since update:
+  - HIGH levels decay to MEDIUM
+  - LOW levels recover to MEDIUM (except Noradrenaline baseline = LOW)
+- Decay is applied in-context at Phase 0.75, written to disk at Phase 6
+
 ## State Versioning
 
 [VERSION]: 1
 [LAST_UPDATED_BY]: initialization
 [LAST_FEEDBACK_ID]: none
+[LAST_UPDATED_TIMESTAMP]: 2026-03-16T00:00:00Z
+[SESSION_COUNT_SINCE_UPDATE]: 0

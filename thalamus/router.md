@@ -24,15 +24,16 @@ The sub-agent returns structured text. **You (the Thalamus) parse the response a
 
 | Phase | Model | Rationale |
 |-------|-------|-----------|
-| 0 (Sensory Buffer) | INLINE | Speed-critical pre-processing |
+| 0 (Sensory Buffer) | INLINE | Sensory registers are sub-500ms — fastest neural process |
 | 0.5 (Basal Ganglia) | INLINE | Simple pattern match |
 | 0.75 (Neuromodulators) | INLINE | File read only |
-| 1 (Amygdala/Hippo/Lang) | SUB-AGENT | Parallel specialized processing |
+| 1 (Amygdala/Hippo/Lang) | SUB-AGENT (gated) | Parallel processing with activation thresholds |
+| 1.25 (Depth Re-eval) | INLINE | Continuous depth-of-processing adjustment |
 | 1.5 (Conditional agents) | SUB-AGENT | Conditional specialized processing |
 | 2 (Integration) | INLINE | Thalamus aggregation |
 | 3 (Prefrontal) | SUB-AGENT | Complex reasoning |
-| 4 (Cerebellum) | SUB-AGENT | Independent validation |
-| 5 (Motor Cortex) | SUB-AGENT | Execution with feedback loop |
+| 4 (Cerebellum) | HYBRID | Inline checklist (PASS), sub-agent (FAIL) — continuous forward model |
+| 5 (Motor Cortex) | INLINE | Execution is substrate-level — same neural tissue as routing |
 | 6 (Consolidation) | SUB-AGENT | Memory consolidation |
 
 ### Event Logging (for Observer)
@@ -57,12 +58,24 @@ This is optional — the brain functions without it. The observer uses it for ti
 
 ## Signal Routing Protocol
 
-### Phase 0: Sensory Buffer (Pre-Processing)
+### Phase 0: Sensory Buffer (Inline Pre-Processing)
 
-Before any routing, run the **Sensory Buffer** (read `${CLAUDE_PLUGIN_ROOT}/regions/2-sensory-fusion/skill-sensory-buffer.md`):
-- Capture raw input exactly as received (text, file paths, image references)
-- Hold for 1 processing cycle to allow multi-modal binding
-- Write to `SESSION_BUFFERS/signal-sensory-buffer.md`
+Perform sensory buffering INLINE — do not dispatch a sub-agent. This mirrors
+the biological sensory register's sub-500ms processing time.
+
+Following the behavioral spec in `${CLAUDE_PLUGIN_ROOT}/regions/2-sensory-fusion/skill-sensory-buffer.md`:
+1. Capture raw input exactly as received (no parsing, no interpretation)
+2. Detect modalities: scan for image paths (.png/.jpg/.svg), URLs (http/figma.com),
+   file paths (/path or ./path), code fences, structured data (JSON/YAML)
+3. Note input length (character count)
+4. Flag ambiguities (typos, unclear references, mixed languages)
+
+Hold these as inline context — do NOT write to `signal-sensory-buffer.md` unless
+the Observer dashboard is active. Pass directly to Phase 0.5.
+
+**Observer hook (optional):** If `SESSION_BUFFERS/event-log.jsonl` exists (Observer
+is running), write the sensory buffer output to `SESSION_BUFFERS/signal-sensory-buffer.md`
+for visualization. Otherwise, skip file I/O entirely.
 
 ### Phase 0.5: Basal Ganglia (Action Selection + Depth Classification)
 
@@ -80,54 +93,121 @@ basal ganglia go/no-go pathways, not a literal neural implementation.
 Biological depth is continuous.
 
 Heuristics (evaluate in order, first match wins):
-1. ROUTINE_MATCH=TRUE → SHALLOW (cached response, skip to Phase 5)
-2. Image refs, Figma URLs, 3+ file paths → DEEP
-3. Keywords: "refactor", "redesign", "migrate", "architecture" → DEEP
-4. Input <80 chars, no code/file/URL modality → SHALLOW
-5. Default → MEDIUM
+1. ROUTINE_MATCH=TRUE -> SHALLOW (cached response, skip to Phase 5)
+2. Conversational/trivial patterns (greetings, single-word acknowledgments) -> SHALLOW
+3. Image refs, Figma URLs, 3+ file paths -> DEEP
+4. DEEP keywords: "refactor", "redesign", "migrate", "architecture", "implement",
+   "design system", "security audit" -> DEEP
+5. Action verb + target (fix/add/update + bug/feature/component etc.) -> MEDIUM
+6. Multi-entity escalation: 3+ distinct entities (PascalCase, file paths) -> escalate one level
+7. Default -> MEDIUM
 
 Neuromodulator overrides (applied after heuristic classification):
-- Noradrenaline HIGH → de-escalate one level (narrows focus)
-- Serotonin HIGH → escalate one level (broadens exploration)
-- Acetylcholine HIGH → escalate one level (enhances attention)
+- Noradrenaline HIGH -> de-escalate one level (narrows focus)
+- Serotonin HIGH -> escalate one level (broadens exploration)
+- Acetylcholine HIGH -> escalate one level (enhances attention)
 - (Dopamine does NOT affect depth — it modulates Prefrontal search width in Phase 3)
 
 #### Depth Effects on Phase Execution
-- SHALLOW: 0 → 0.5 → 5 (respond directly)
-- MEDIUM:  0 → 0.5 → 0.75 → 1 → 2 → 3 → 5
-- DEEP:    0 → 0.5 → 0.75 → 1 → 1.5 → 2 → 3 → 4 → 5 → 6
+- SHALLOW: 0 -> 0.5 -> 5 (respond directly, all inline)
+- MEDIUM:  0 -> 0.5 -> 0.75 -> 1(gated) -> 1.25 -> 2 -> 3 -> 5
+- DEEP:    0 -> 0.5 -> 0.75 -> 1(gated) -> 1.25 -> 1.5 -> 2 -> 3 -> 4(hybrid) -> 5 -> 6
 
 #### Depth-to-Phase Override Matrix (neuromodulator interactions)
 
-| Depth | Base Phases | + Noradrenaline HIGH | + Serotonin HIGH |
-|-------|-------------|---------------------|-----------------|
-| SHALLOW | 0→0.5→5 | 0→0.5→5 (no change) | 0→0.5→0.75→1→2→3→5 (escalated to MEDIUM) |
-| MEDIUM | 0→0.5→0.75→1→2→3→5 | 0→0.5→5 (de-escalated) | 0→0.5→0.75→1→1.5→2→3→4→5→6 (escalated) |
-| DEEP | 0→0.5→0.75→1→1.5→2→3→4→5→6 | 0→0.5→0.75→1→2→3→5 (de-escalated) | no change |
+| Depth | Base Phases | + Noradrenaline HIGH | + Serotonin HIGH | + Acetylcholine HIGH |
+|-------|-------------|---------------------|-----------------|---------------------|
+| SHALLOW | 0->0.5->5 | no change | escalated to MEDIUM | escalated to MEDIUM |
+| MEDIUM | 0->0.5->0.75->1(gated)->1.25->2->3->5 | de-escalated to SHALLOW | escalated to DEEP | escalated to DEEP |
+| DEEP | 0->0.5->0.75->1(gated)->1.25->1.5->2->3->4(hybrid)->5->6 | de-escalated to MEDIUM | no change | no change |
 
-### Phase 0.75: Neuromodulation Check
+### Phase 0.75: Neuromodulation Check (Two-Layer Model)
 
-Read `~/.config/brain-os/state-neuromodulators.md` to determine current cognitive mode.
+Read neuromodulator state from TWO sources:
 
-**IMPORTANT: Neuromodulator state is READ-ONLY during Phases 0-5.**
-Mutations only happen at Phase 6 (consolidation) by Reward System/Hypothalamus.
-This prevents race conditions across concurrent sessions.
+1. **Baseline state** (disk): `~/.config/brain-os/state-neuromodulators.md`
+   — Long-term modulation from previous sessions. Written atomically at Phase 6.
 
-### Phase 1: Parallel Sensory Dispatch (The Binding Window)
+2. **Transient state** (in-context): Session-local overrides from Reward System
+   triggers during the current session. These take precedence over baseline.
 
-Dispatch these sub-agents **in parallel** using the Agent tool:
+Effective level = transient override if set, else baseline from disk.
 
-| Agent | Skill File | Buffer Output | Purpose |
-|-------|-----------|---------------|---------|
-| Amygdala | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-amygdala.md` | `SESSION_BUFFERS/signal-amygdala.md` | Graduated threat detection + emotional valence tagging |
-| Hippocampus | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-hippocampus.md` | `SESSION_BUFFERS/signal-hippocampus.md` | Memory retrieval with reconsolidation |
-| Language Center | `${CLAUDE_PLUGIN_ROOT}/regions/2-sensory-fusion/skill-language-center.md` | `SESSION_BUFFERS/signal-language.md` | Intent parsing + output format |
+**Decay check (homeostatic regulation):** If `[LAST_UPDATED_TIMESTAMP]` in
+baseline state is >24 hours ago or `[SESSION_COUNT_SINCE_UPDATE]` > 5:
+- HIGH levels decay to MEDIUM
+- LOW levels recover to MEDIUM (except Noradrenaline, whose baseline is LOW)
+Decay is noted in-context but only written to disk at Phase 6.
+
+**IMPORTANT:** Baseline state file remains READ-ONLY during Phases 0-5.
+Transient overrides are context-only (not written to disk) until Phase 6
+merges them into baseline. This preserves race-condition protection while
+enabling intra-session modulation.
+
+### Phase 1: Parallel Sensory Dispatch (Gated Activation)
+
+Dispatch Phase 1 sub-agents with biological activation thresholds.
+Not every region fires on every stimulus — this is more biologically
+accurate than unconditional parallel dispatch.
+
+| Agent | Skill File | Buffer Output | Activation Gate |
+|-------|-----------|---------------|-----------------|
+| Language Center | `${CLAUDE_PLUGIN_ROOT}/regions/2-sensory-fusion/skill-language-center.md` | `SESSION_BUFFERS/signal-language.md` | Always (Wernicke's area processes every utterance) |
+| Amygdala | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-amygdala.md` | `SESSION_BUFFERS/signal-amygdala.md` | Conditional (novel stimulus or threat patterns) |
+| Hippocampus | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-hippocampus.md` | `SESSION_BUFFERS/signal-hippocampus.md` | Conditional (non-empty long-term memory + no session continuity) |
+
+**Language Center:** Always dispatch. Intent parsing is required for all
+non-SHALLOW inputs.
+
+**Amygdala activation gate:**
+- First message in session: ALWAYS dispatch (novel context, low threshold)
+- Subsequent messages: dispatch ONLY if input contains potential threat
+  patterns (from threat detection keyword list in skill-amygdala.md),
+  unfamiliar content, or if previous Amygdala result was ELEVATED
+- If gated (not dispatched): carry forward previous session values or
+  set inline defaults: `[THREAT_LEVEL]: SAFE`, `[EMOTIONAL_VALENCE]: 0`,
+  `[RECOMMENDED_ACTION]: proceed`
+
+**Hippocampus activation gate:**
+- Check if `LONG_TERM/` subdirectories contain any content files
+  (not just directories or initialization files)
+- If all subdirectories empty: skip and set inline `[MEMORY_STATE]: NULL`
+- **Session continuity override:** If `SESSION_BUFFERS/integrated-context.md`
+  already exists from a previous turn AND working directory unchanged,
+  skip retrieval — active memories don't need re-encoding from long-term store
+- Exception: dispatch if input references new project/technology/domain
+  not present in existing integrated context
+
+**When agents are gated:** Log `{"phase":"1","agent":"<name>","status":"skipped"}` to event-log.
 
 **Graduated Amygdala Response (NOT binary halt):**
-- `SAFE` + `proceed` → continue normally
-- `ELEVATED` + `caution` → proceed with heightened attention (Noradrenaline -> HIGH)
-- `ELEVATED` + `re-analyze` → re-dispatch Language Center with threat context before proceeding
-- `THREAT_DETECTED` + `halt` → reject input, but explain why (don't just stop)
+- `SAFE` + `proceed` -> continue normally
+- `ELEVATED` + `caution` -> proceed with heightened attention (Noradrenaline -> HIGH)
+- `ELEVATED` + `re-analyze` -> re-dispatch Language Center with threat context before proceeding
+- `THREAT_DETECTED` + `halt` -> reject input, but explain why (don't just stop)
+
+### Phase 1.25: Depth Re-Evaluation (Adaptive Routing)
+
+After Phase 1 agents return (or are gated), re-evaluate depth classification
+INLINE. This mirrors the brain's continuous depth-of-processing adjustment —
+initial classification is a fast heuristic, but early processing results can
+reveal unexpected complexity.
+
+**Escalation triggers (MEDIUM -> DEEP):**
+- Language Center returned `[INTENT]: AMBIGUOUS`
+- Hippocampus returned contradictory procedural bindings
+- Amygdala returned `ELEVATED` (heightened processing warranted)
+
+**De-escalation triggers (DEEP -> MEDIUM):**
+- All Phase 1 agents returned simple, non-conflicting results
+- Hippocampus returned `[MEMORY_STATE]: NULL` (no relevant memory context)
+- Language Center returned clear intent with single entity
+
+Re-classification adjusts which subsequent phases execute:
+- Escalated to DEEP: enables Phase 1.5, Phase 4, Phase 6
+- De-escalated to MEDIUM: skips Phase 1.5, Phase 4, Phase 6
+
+Log: `{"phase":"1.25","agent":"depth-reeval","status":"complete","result":"<ESCALATED|UNCHANGED|DE-ESCALATED>"}`
 
 ### Phase 1.5: Conditional Sensory Dispatch
 
@@ -155,22 +235,46 @@ Dispatch the **Prefrontal Cortex** agent:
 - Feed it the content of `SESSION_BUFFERS/integrated-context.md`
 - Parse response and write to `SESSION_BUFFERS/motor-plan.md`
 
-### Phase 4: Error Correction (with feedback loop)
+### Phase 4: Error Correction (Hybrid Inline + Sub-Agent)
 
-Dispatch the **Cerebellum** agent:
-- Read `${CLAUDE_PLUGIN_ROOT}/regions/4-executive-and-motor/skill-cerebellum.md`
-- Feed it the content of `SESSION_BUFFERS/motor-plan.md`
-- Write Cerebellum's response to `SESSION_BUFFERS/signal-cerebellum.md` for auditability
-- If `[VALIDATION]: FAIL` → loop back to Phase 3 with error context (max 2 loops)
-- If `[VALIDATION]: PASS` → proceed to Phase 5
+Run the Cerebellum's validation checklist INLINE first. This mirrors the
+biological cerebellum's continuous forward model.
 
-### Phase 5: Execution (with feedback loop)
+**Inline validation checklist** (from `skill-cerebellum.md`):
+1. Logic consistency: Does the blueprint's step sequence make logical sense?
+2. Syntax prediction: Will the described approach produce valid code/output?
+3. Destructive action check: Any irreversible operations (rm -rf, force-push, DROP TABLE)?
+4. Constraint satisfaction: Does the plan respect all constraints from integrated-context?
+5. Hallucination detection: References to functions, APIs, or files that likely don't exist?
 
-Dispatch the **Motor Cortex** agent:
-- Read `${CLAUDE_PLUGIN_ROOT}/regions/4-executive-and-motor/skill-motor-cortex.md`
-- Feed it the content of `SESSION_BUFFERS/motor-plan.md`
-- Produce the final output for the user
-- **Feedback loop:** If execution produces errors, write to `SESSION_BUFFERS/signal-error.md` and route back through Cerebellum -> Prefrontal for correction
+**If all checks pass:** `[VALIDATION]: PASS` — write to `SESSION_BUFFERS/signal-cerebellum.md`
+and proceed to Phase 5 inline. No sub-agent needed.
+
+**If any check fails:** Dispatch the full Cerebellum SUB-AGENT with the motor plan
+AND the specific failing check(s). The sub-agent provides detailed error analysis
+and suggested fixes per `skill-cerebellum.md` spec. Route back to Phase 3 (max 2 loops).
+
+Check Neuromodulator state: if Noradrenaline HIGH, lower validation threshold
+(speed over thoroughness).
+
+### Phase 5: Execution (Inline, with Feedback Loop)
+
+Execute the motor plan INLINE — do not dispatch a sub-agent. The Thalamus IS
+the neural substrate on which the Motor Cortex operates.
+
+Following the behavioral spec in `${CLAUDE_PLUGIN_ROOT}/regions/4-executive-and-motor/skill-motor-cortex.md`:
+1. Read `SESSION_BUFFERS/motor-plan.md` (already in context from Phase 3/4)
+2. Translate each blueprint step into executable action (code, commands, prose)
+3. Format output according to Language Center's `[OUTPUT_REGISTER]` and `[OUTPUT_FORMAT]`
+4. Match emotional tone from Parietal-Insula's recommendation (if Phase 1.5 fired)
+5. Execute exactly — do NOT add logic, features, or improvements beyond the blueprint
+6. If blueprint is incomplete or unclear, do NOT guess — signal error
+
+**Feedback loop (preserved):** If execution produces an error:
+1. Write error to `SESSION_BUFFERS/signal-error.md` (format per Motor Cortex spec)
+2. Route back through Cerebellum -> Prefrontal for correction (max 2 loops)
+
+**Observer hook:** Log `{"phase":"5","agent":"motor-cortex","status":"start"/"complete"}`
 
 ### Phase 6: Memory Consolidation
 
@@ -193,3 +297,15 @@ These agents are dispatched outside the main signal flow based on specific trigg
 | Default Mode Network | `${CLAUDE_PLUGIN_ROOT}/regions/3-subconscious-networks/skill-default-mode.md` | Between tasks (idle), every 5th session, or when user prompts reflection ("what have we learned?") |
 
 These agents update `~/.config/brain-os/state-neuromodulators.md` and `LONG_TERM` but do not produce user-facing output.
+
+**Mid-session Reward System activation:** When the user gives explicit feedback
+(positive: "thanks", "perfect", "that worked" / negative: "wrong", "no",
+"that broke it"), the Reward System evaluates and produces a transient
+neuromodulator override:
+- Positive feedback -> transient Dopamine HIGH (reinforce approach)
+- Negative feedback -> transient Dopamine LOW + Acetylcholine HIGH (learn/adapt)
+- Urgency detected -> transient Noradrenaline HIGH (narrow focus)
+
+These transient overrides affect all subsequent turns in the current session
+without waiting for Phase 6. The baseline file on disk is NOT modified —
+transient state is merged into baseline only at Phase 6 consolidation.
