@@ -31,7 +31,7 @@ The sub-agent returns structured text. **You (the Thalamus) parse the response a
 | 1.5 (Conditional agents) | SUB-AGENT | Conditional specialized processing |
 | 2 (Integration) | INLINE | Thalamus aggregation |
 | 3 (Prefrontal) | SUB-AGENT | Complex reasoning |
-| 4 (Cerebellum) | SUB-AGENT | Independent validation |
+| 4 (Cerebellum) | HYBRID | Inline checklist (PASS), sub-agent (FAIL) — continuous forward model |
 | 5 (Motor Cortex) | INLINE | Execution is substrate-level — same neural tissue as routing |
 | 6 (Consolidation) | SUB-AGENT | Memory consolidation |
 
@@ -219,14 +219,27 @@ Dispatch the **Prefrontal Cortex** agent:
 - Feed it the content of `SESSION_BUFFERS/integrated-context.md`
 - Parse response and write to `SESSION_BUFFERS/motor-plan.md`
 
-### Phase 4: Error Correction (with feedback loop)
+### Phase 4: Error Correction (Hybrid Inline + Sub-Agent)
 
-Dispatch the **Cerebellum** agent:
-- Read `${CLAUDE_PLUGIN_ROOT}/regions/4-executive-and-motor/skill-cerebellum.md`
-- Feed it the content of `SESSION_BUFFERS/motor-plan.md`
-- Write Cerebellum's response to `SESSION_BUFFERS/signal-cerebellum.md` for auditability
-- If `[VALIDATION]: FAIL` → loop back to Phase 3 with error context (max 2 loops)
-- If `[VALIDATION]: PASS` → proceed to Phase 5
+Run the Cerebellum's validation checklist INLINE first. This mirrors the
+biological cerebellum's continuous forward model.
+
+**Inline validation checklist** (from `skill-cerebellum.md`):
+1. Logic consistency: Does the blueprint's step sequence make logical sense?
+2. Syntax prediction: Will the described approach produce valid code/output?
+3. Destructive action check: Any irreversible operations (rm -rf, force-push, DROP TABLE)?
+4. Constraint satisfaction: Does the plan respect all constraints from integrated-context?
+5. Hallucination detection: References to functions, APIs, or files that likely don't exist?
+
+**If all checks pass:** `[VALIDATION]: PASS` — write to `SESSION_BUFFERS/signal-cerebellum.md`
+and proceed to Phase 5 inline. No sub-agent needed.
+
+**If any check fails:** Dispatch the full Cerebellum SUB-AGENT with the motor plan
+AND the specific failing check(s). The sub-agent provides detailed error analysis
+and suggested fixes per `skill-cerebellum.md` spec. Route back to Phase 3 (max 2 loops).
+
+Check Neuromodulator state: if Noradrenaline HIGH, lower validation threshold
+(speed over thoroughness).
 
 ### Phase 5: Execution (Inline, with Feedback Loop)
 
