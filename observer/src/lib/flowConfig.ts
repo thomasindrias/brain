@@ -13,17 +13,20 @@ export const nodePositions: Record<string, { x: number; y: number }> = {
   'hippocampus': { x: 400, y: 220 },
   'language-center': { x: 600, y: 220 },
 
+  // Phase 1.25: Depth re-evaluation
+  'depth-reeval': { x: 400, y: 280 },
+
   // Phase 1.5: Conditional branches (offset)
-  'visual-cortex': { x: 100, y: 340 },
-  'parietal-insula': { x: 400, y: 340 },
-  'anterior-cingulate': { x: 700, y: 340 },
+  'visual-cortex': { x: 100, y: 400 },
+  'parietal-insula': { x: 400, y: 400 },
+  'anterior-cingulate': { x: 700, y: 400 },
 
   // Phase 2-6: Vertical stack
-  'integration': { x: 400, y: 460 },
-  'prefrontal': { x: 400, y: 560 },
-  'cerebellum': { x: 400, y: 660 },
-  'motor-cortex': { x: 400, y: 760 },
-  'consolidation': { x: 400, y: 860 },
+  'integration': { x: 400, y: 520 },
+  'prefrontal': { x: 400, y: 620 },
+  'cerebellum': { x: 400, y: 720 },
+  'motor-cortex': { x: 400, y: 820 },
+  'consolidation': { x: 400, y: 920 },
 };
 
 // Base edges - all static connections with default styling (gray dashed for pending)
@@ -36,30 +39,33 @@ export const baseEdges: Edge[] = [
   { id: 'e-bg-hipp', source: 'basal-ganglia', target: 'hippocampus' },
   { id: 'e-bg-lang', source: 'basal-ganglia', target: 'language-center' },
 
-  // Phase 1 → 1.5 (conditional branches - dashed by default)
+  // Phase 1 → 1.25
+  { id: 'e-amy-dr', source: 'amygdala', target: 'depth-reeval' },
+  { id: 'e-hipp-dr', source: 'hippocampus', target: 'depth-reeval' },
+  { id: 'e-lang-dr', source: 'language-center', target: 'depth-reeval' },
+
+  // Phase 1.25 → 1.5 (conditional branches - dashed)
   {
-    id: 'e-lang-vc',
-    source: 'language-center',
+    id: 'e-dr-vc',
+    source: 'depth-reeval',
     target: 'visual-cortex',
     style: { strokeDasharray: '5,5' },
   },
   {
-    id: 'e-lang-pi',
-    source: 'language-center',
+    id: 'e-dr-pi',
+    source: 'depth-reeval',
     target: 'parietal-insula',
     style: { strokeDasharray: '5,5' },
   },
   {
-    id: 'e-lang-ac',
-    source: 'language-center',
+    id: 'e-dr-ac',
+    source: 'depth-reeval',
     target: 'anterior-cingulate',
     style: { strokeDasharray: '5,5' },
   },
 
-  // Phase 1 → 2
-  { id: 'e-amy-int', source: 'amygdala', target: 'integration' },
-  { id: 'e-hipp-int', source: 'hippocampus', target: 'integration' },
-  { id: 'e-lang-int', source: 'language-center', target: 'integration' },
+  // Phase 1.25 → 2 (direct path)
+  { id: 'e-dr-int', source: 'depth-reeval', target: 'integration' },
 
   // Phase 1.5 → 2
   {
@@ -107,6 +113,7 @@ export const nodeMetadata: Record<
   'amygdala': { phase: '1', label: 'Amygdala' },
   'hippocampus': { phase: '1', label: 'Hippocampus' },
   'language-center': { phase: '1', label: 'Language Center' },
+  'depth-reeval': { phase: '1.25', label: 'Depth Re-eval' },
   'visual-cortex': { phase: '1.5', label: 'Visual Cortex', conditional: true },
   'parietal-insula': { phase: '1.5', label: 'Parietal-Insula', conditional: true },
   'anterior-cingulate': { phase: '1.5', label: 'Anterior Cingulate', conditional: true },

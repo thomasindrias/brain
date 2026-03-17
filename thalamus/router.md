@@ -28,6 +28,7 @@ The sub-agent returns structured text. **You (the Thalamus) parse the response a
 | 0.5 (Basal Ganglia) | INLINE | Simple pattern match |
 | 0.75 (Neuromodulators) | INLINE | File read only |
 | 1 (Amygdala/Hippo/Lang) | SUB-AGENT (gated) | Parallel processing with activation thresholds |
+| 1.25 (Depth Re-eval) | INLINE | Continuous depth-of-processing adjustment |
 | 1.5 (Conditional agents) | SUB-AGENT | Conditional specialized processing |
 | 2 (Integration) | INLINE | Thalamus aggregation |
 | 3 (Prefrontal) | SUB-AGENT | Complex reasoning |
@@ -108,9 +109,9 @@ Neuromodulator overrides (applied after heuristic classification):
 - (Dopamine does NOT affect depth — it modulates Prefrontal search width in Phase 3)
 
 #### Depth Effects on Phase Execution
-- SHALLOW: 0 → 0.5 → 5 (respond directly)
-- MEDIUM:  0 → 0.5 → 0.75 → 1 → 2 → 3 → 5
-- DEEP:    0 → 0.5 → 0.75 → 1 → 1.5 → 2 → 3 → 4 → 5 → 6
+- SHALLOW: 0 → 0.5 → 5 (respond directly, all inline)
+- MEDIUM:  0 → 0.5 → 0.75 → 1(gated) → 1.25 → 2 → 3 → 5
+- DEEP:    0 → 0.5 → 0.75 → 1(gated) → 1.25 → 1.5 → 2 → 3 → 4(hybrid) → 5 → 6
 
 #### Depth-to-Phase Override Matrix (neuromodulator interactions)
 
